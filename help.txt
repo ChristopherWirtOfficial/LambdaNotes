@@ -1,0 +1,30 @@
+[notice] A new release of pip available: 22.3.1 -> 23.1.1
+[notice] To update, run: python3.10 -m pip install --upgrade pip
+Usage: python -m autogpt [OPTIONS] COMMAND [ARGS]...
+
+  Welcome to AutoGPT an experimental open-source application showcasing the
+  capabilities of the GPT-4 pushing the boundaries of AI.
+
+  Start an Auto-GPT assistant.
+
+Options:
+  -c, --continuous                Enable Continuous Mode
+  -y, --skip-reprompt             Skips the re-prompting messages at the
+                                  beginning of the script
+  -C, --ai-settings TEXT          Specifies which ai_settings.yaml file to
+                                  use, will also automatically skip the re-
+                                  prompt.
+  -l, --continuous-limit INTEGER  Defines the number of times to run in
+                                  continuous mode
+  --speak                         Enable Speak Mode
+  --debug                         Enable Debug Mode
+  --gpt3only                      Enable GPT3.5 Only Mode
+  --gpt4only                      Enable GPT4 Only Mode
+  -m, --use-memory TEXT           Defines which Memory backend to use
+  -b, --browser-name TEXT         Specifies which web-browser to use when
+                                  using selenium to scrape the web.
+  --allow-downloads               Dangerous: Allows Auto-GPT to download files
+                                  natively.
+  --skip-news                     Specifies whether to suppress the output of
+                                  latest news on startup.
+  --help                          Show this message and exit.
