@@ -2,11 +2,11 @@ import { Box } from '@chakra-ui/react';
 import React, { FC } from 'react';
 
 import LambdaUniverse from './LambdaUniverse';
-import { useGlobalCurrentlySelectedLambdaHandling } from './state/useCurrentlySelectedLambda';
+import { useGlobalLambdaClickHandling } from './state/useCurrentlySelectedLambda';
 import useLambdaRootUniverse from './state/useLambdaRootUniverse';
 
 const LambdaNotes: FC = () => {
-  useGlobalCurrentlySelectedLambdaHandling();
+  useGlobalLambdaClickHandling();
 
   const rootLambdaUniverse = useLambdaRootUniverse();
 

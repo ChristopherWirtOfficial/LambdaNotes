@@ -87,5 +87,13 @@ export const addToConnectionsAtom = atom(
       connections: [...lambda.connections, connectionId],
     };
     set(LambdaUniverseAtomFamily(lambdaId), updatedLambda);
+
+    console.log('added connection', {
+      lambdaId,
+      connectionId,
+      lambda,
+      updatedLambda,
+      actualLatestLambda: get(LambdaUniverseAtomFamily(lambdaId)),
+    });
   }
 );

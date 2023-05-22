@@ -2,8 +2,13 @@ import React, { FC, useState } from 'react';
 import { useAtom, useSetAtom } from 'jotai';
 import { Lambda, LambdaAtom } from './state/atoms';
 import { createAndInitializeLambdaAtom, addToConnectionsAtom, addToDescriptionAtom } from './state/write-atoms';
-import { CurrentlySelectedLambda } from './state/useCurrentlySelectedLambda';
+import {
+  CurrentlyFormingConnection,
+  CurrentlySelectedLambda,
+  useHandleLambdaClick,
+} from './state/useCurrentlySelectedLambda';
 import { ListItem, Box, Input, List, VStack } from '@chakra-ui/react';
+import { LinkIcon } from '@chakra-ui/icons';
 
 type LambdaListProps = {
   lambdas: Lambda[];
@@ -34,7 +39,7 @@ const LambdaList: FC<LambdaListProps> = ({ lambdas, handleAddLambda, isSelected 
   };
 
   return (
-    <VStack align="start" spacing={4} pl="4">
+    <VStack align="start" spacing={4} pl="4" py="1">
       {lambdas.map((L) => (
         <LambdaUniverse key={L.id} lambda={L} />
       ))}
@@ -50,15 +55,11 @@ const LambdaList: FC<LambdaListProps> = ({ lambdas, handleAddLambda, isSelected 
 const LambdaUniverse: FC<{ lambda: Lambda }> = ({ lambda }) => {
   const { value, id, connections, description } = lambda;
 
-  const [selectedLambda, setSelectedLambda] = useAtom(CurrentlySelectedLambda);
+  const [selectedLambda] = useAtom(CurrentlySelectedLambda);
 
   const createLambda = useSetAtom(createAndInitializeLambdaAtom);
   const addToConnections = useSetAtom(addToConnectionsAtom);
   const addToDescription = useSetAtom(addToDescriptionAtom);
-
-  const handleLambdaClick = () => {
-    setSelectedLambda(lambda.id);
-  };
 
   const isSelected = lambda.id === selectedLambda;
 
@@ -72,9 +73,24 @@ const LambdaUniverse: FC<{ lambda: Lambda }> = ({ lambda }) => {
     addToDescription({ lambdaId: id, descriptionId: newLambdaId });
   };
 
+  const handleLambdaClick = useHandleLambdaClick(id);
+
+  const [formingConnection, setFormingConnection] = useAtom(CurrentlyFormingConnection);
+
+  const handleIconClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering the lambda selection when the icon is clicked
+    if (formingConnection === id) {
+      setFormingConnection(null); // If this lambda is currently in connection mode, cancel it
+    } else {
+      setFormingConnection(id); // Else, set this lambda as the one forming a connection
+    }
+  };
+
   return (
-    <Box w="100%" h="100%" borderWidth="1px" borderColor={isSelected ? 'darkgray' : 'white'}>
-      <Box onClick={handleLambdaClick}>{value}</Box>
+    <Box w="100%" h="100%" borderWidth={isSelected ? '3px' : '1px'} borderColor={isSelected ? 'white' : 'darkgray'}>
+      <Box p="1" onClick={handleLambdaClick}>
+        {value} <LinkIcon onClick={handleIconClick} color={formingConnection === id ? 'blue.500' : 'gray.500'} />
+      </Box>
       <VStack align="start" spacing={4}>
         <List>
           <ListItem>

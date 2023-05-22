@@ -31,9 +31,7 @@ export const LambdaUniverseAtomFamily = atomFamily((id: LambdaId) =>
 
 const MAX_DEPTH = 10;
 
-// This atomFamily creates a unidirectional graph of lambdas connected to a given lambda, recursively.
-// Each lambda is represented exactly once and any connections to other lambdas are represented by their own lambda atoms.
-// In case a lambda exists elsewhere in the graph already, its id is used for reference, avoiding duplication.
+// This atomFamily creates a unidirectional graph of lambdas connected from a given lambda as the root, recursively.
 export const LambdaPerspectiveGraphAtomFamily = atomFamily((rootLambdaAtom: LambdaAtom) => {
   // This set stores all the visited lambda IDs.
 
