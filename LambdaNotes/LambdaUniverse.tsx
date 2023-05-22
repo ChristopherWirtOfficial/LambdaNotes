@@ -63,16 +63,12 @@ const LambdaUniverse: FC<{ lambda: Lambda }> = ({ lambda }) => {
   const isSelected = lambda.id === selectedLambda;
 
   const handleAddConnectionLambda = (newLambda: Omit<LambdaAtom, 'id'>) => {
-    console.log('adding lambda', newLambda);
     const newLambdaId = createLambda({ ...newLambda, connections: [id] });
-    console.log('adding connection', { newLambdaId, id, lambda });
     addToConnections({ lambdaId: id, connectionId: newLambdaId });
   };
 
   const handleAddDescriptionLambda = (newLambda: Omit<LambdaAtom, 'id'>) => {
-    console.log('adding lambda', newLambda);
     const newLambdaId = createLambda({ ...newLambda, connections: [id] });
-    console.log('adding description', { newLambdaId, id, lambda });
     addToDescription({ lambdaId: id, descriptionId: newLambdaId });
   };
 

@@ -44,14 +44,9 @@ export const LambdaPerspectiveGraphAtomFamily = atomFamily((rootLambdaAtom: Lamb
       const lambdaAtom = get(selectAtom(LambdaUniverseAtomFamily(lambdaId), (v) => v));
 
       // If this node has already been visited, we stop traversing this path.
-      console.log('Visiting lambda', lambdaAtom.id, 'at depth', depth);
-
       if (visited.has(lambdaAtom.id)) {
-        console.log('Already visited lambda', lambdaAtom.id);
         return undefined;
       }
-
-      console.log('Not visited yet, continuing', lambdaAtom);
 
       const lambda: Lambda = {
         id: lambdaAtom.id,
