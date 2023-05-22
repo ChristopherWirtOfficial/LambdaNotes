@@ -65,7 +65,7 @@ const Upgrades: FC = () => {
 
   return (
     <VStack w="100%" flex={1}>
-      <Text fontSize="2xl">Upgrades</Text>
+      <Text fontSize="2xl" color='crt.green'>Upgrades</Text>
       {additiveUpgrades.map((upgrade, index) => (
         <Box key={index} borderWidth="1px" borderRadius="lg" p="4">
           <Text>{upgrade.name} ({upgrade.level ?? 0})</Text>
