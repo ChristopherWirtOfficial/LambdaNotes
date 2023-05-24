@@ -26,9 +26,6 @@ export const BaseView: React.FC<BaseViewProps> = ({ lambda, addToConnections, ad
 
   return (
     <VStack flex="1" bg="gray.700" p={6} borderRadius="lg" marginLeft={8}>
-      <Heading as="h2" size="lg" color="white">
-        Currently Selected
-      </Heading>
       <HStack spacing={6}>
         <VStack>
           <Box>Add Connection</Box>

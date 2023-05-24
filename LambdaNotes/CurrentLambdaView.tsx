@@ -8,7 +8,7 @@ import StandardPerspectiveView from './ProjectionViews/StandardPerspectiveView';
 import NotesView from './ProjectionViews/NotesView';
 
 // Define a new atom to hold the current selection of projection.
-const currentProjectionAtom = atom('perspective'); // 'perspective' or 'note'
+const currentProjectionAtom = atom('note'); // 'perspective' or 'note'
 
 export const CurrentLambdaView: FC = () => {
   const [currentProjection, setCurrentProjection] = useAtom(currentProjectionAtom);
