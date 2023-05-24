@@ -2,20 +2,23 @@ import { Flex, Heading, VStack } from '@chakra-ui/react';
 import React, { FC } from 'react';
 
 import LambdaUniverse from './LambdaUniverse';
-import { useGlobalLambdaClickHandling } from './state/useCurrentlySelectedLambda';
+import { useCurrentlySelectedAsRoot, useGlobalLambdaClickHandling } from './state/useCurrentlySelectedLambda';
 import useLambdaRootUniverse from './state/useLambdaRootUniverse';
 import CurrentLambdaView from './CurrentLambdaView';
 import TypeScriptEditor from './TypescriptEditor';
+import { NoteViewAtomFamily } from './state/Projections/NoteViewAtomFamily';
 
 const LambdaNotes: React.FC = () => {
   useGlobalLambdaClickHandling();
 
   const rootLambdaUniverse = useLambdaRootUniverse();
 
+  const notesRoot = useCurrentlySelectedAsRoot(NoteViewAtomFamily);
+
   return (
     <VStack bg="blackAlpha.800" color="whiteAlpha.800">
       <Flex>
-        <TypeScriptEditor />
+        <TypeScriptEditor key={notesRoot.id} />
         <CurrentLambdaView />
       </Flex>
       <Flex w="100vw" minH="100vh" p={10} justifyContent="space-between" gap={8}>

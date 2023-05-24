@@ -8,19 +8,19 @@ import { Lambda } from '../state';
 interface BaseViewProps {
   lambda: Lambda;
   addToConnections: (newLambdaId: string) => void;
-  addToDescription: (newLambdaId: string) => void;
+  addTodescriptions: (newLambdaId: string) => void;
 }
 
-export const BaseView: React.FC<BaseViewProps> = ({ lambda, addToConnections, addToDescription }) => {
+export const BaseView: React.FC<BaseViewProps> = ({ lambda, addToConnections, addTodescriptions }) => {
   const connection = useAddLambda({
     addToCategory: (newLambdaId: string) => {
       addToConnections(newLambdaId);
     },
   });
 
-  const description = useAddLambda({
+  const descriptions = useAddLambda({
     addToCategory: (newLambdaId: string) => {
-      addToDescription(newLambdaId);
+      addTodescriptions(newLambdaId);
     },
   });
 
@@ -34,9 +34,9 @@ export const BaseView: React.FC<BaseViewProps> = ({ lambda, addToConnections, ad
           </form>
         </VStack>
         <VStack>
-          <Box>Add Description</Box>
-          <form onSubmit={description.handleFormSubmit}>
-            <Input value={description.inputValue} onChange={description.handleInputChange} placeholder="Add new..." />
+          <Box>Add descriptions</Box>
+          <form onSubmit={descriptions.handleFormSubmit}>
+            <Input value={descriptions.inputValue} onChange={descriptions.handleInputChange} placeholder="Add new..." />
           </form>
         </VStack>
       </HStack>

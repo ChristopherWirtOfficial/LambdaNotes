@@ -24,7 +24,7 @@ const LambdaList: FC<LambdaListProps> = ({ lambdas }) => {
 };
 
 const LambdaUniverse: FC<{ lambda: Lambda }> = ({ lambda }) => {
-  const { value, id, connections, description } = lambda;
+  const { value, id, connections, descriptions } = lambda;
 
   const [selectedLambda] = useAtom(CurrentlySelectedLambda);
 
@@ -51,7 +51,7 @@ const LambdaUniverse: FC<{ lambda: Lambda }> = ({ lambda }) => {
       <VStack align="start" spacing={4}>
         <List>
           <ListItem>
-            <LambdaList lambdas={description} />
+            <LambdaList lambdas={descriptions} />
           </ListItem>
           <ListItem>
             <LambdaList lambdas={connections} />

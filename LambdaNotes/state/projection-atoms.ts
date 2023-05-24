@@ -2,7 +2,7 @@ import { atomFamily } from 'jotai/utils';
 import { atom } from 'jotai';
 import { LambdaId, fetchLambdaAtom, updateLambdaAtom } from './atoms';
 
-type ArrayKeysLambdaAtom = 'description' | 'connections';
+type ArrayKeysLambdaAtom = 'descriptions' | 'connections';
 
 // Add to an array within a lambda atom
 export const addToArrayInLambdaAtom = atomFamily((params: { lambdaId: LambdaId; arrayName: ArrayKeysLambdaAtom }) => {

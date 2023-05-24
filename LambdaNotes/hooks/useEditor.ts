@@ -5,6 +5,19 @@ import { editor as monacoEditor } from 'monaco-editor';
 import { useCallback } from 'react';
 import { Lambda } from '../state/atoms';
 
+// TODO: PICKUP - This set of atoms and hooks is NOT in use currently, but probably should be!
+/*           I'd ideally love to manage these with atoms:
+ *             - editor ref
+ *             - monaco instance (injected from a hook ig)
+ *             - decorations/ranges
+ *             - CHANGES (and updating the atoms accordingly)
+ *
+ *           In my ideal world, this would let each lambda be fully represented by some atom that
+ *            ultimately orchestrates and encapsulates all of the above for its own state.
+ *
+ *           The editor/monaco instances will be singletons, and we'll also want "editorMounted" to be an atom
+ *            - Maybe also a derived atom that is like `editorMounted && editorInstance && monacoInstance`
+ */
 // Atom to store the current editor instance
 export const editorAtom = atom<monacoEditor.IStandaloneCodeEditor | null>(null);
 
@@ -34,7 +47,7 @@ export const decorationsAtomFamily = atomFamily((notesRoot: Lambda) =>
     const monaco = get(monacoInstanceAtom);
     const lineNumberLambdaIdMap = new Map(); // local map
 
-    const decorations = notesRoot.description.map((lambda, index) => {
+    const decorations = notesRoot.descriptions.map((lambda, index) => {
       const startLineNumber = 2 * index + 1;
       const endLineNumber = startLineNumber;
       const startColumn = 1;
@@ -56,10 +69,10 @@ export const decorationsAtomFamily = atomFamily((notesRoot: Lambda) =>
   })
 );
 
-// Atom to calculate the flattened description text
-export const descriptionLambasAsTextAtom = atom((get) => {
+// Atom to calculate the flattened descriptions text
+export const descriptionsLambasAsTextAtom = atom((get) => {
   const notesRoot = get(NoteViewAtomFamily);
-  return notesRoot.description.reduce((acc, curr) => {
+  return notesRoot.descriptions.reduce((acc, curr) => {
     return acc ? `${acc}\n\n${curr.value}` : curr.value;
   }, '');
 });

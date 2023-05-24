@@ -23,10 +23,10 @@ export const FlattenGraphToDepthAtomFamily = (depth: number) => {
         const fakeFlat = {
           ...flat,
           connections: [],
-          description: [],
+          descriptions: [],
         };
 
-        return [fakeFlat, ...flat.connections, ...flat.description];
+        return [fakeFlat, ...flat.connections, ...flat.descriptions];
       };
 
       const flattenGraph = (graph: Lambda, currentDepth: number): Lambda => {
@@ -37,12 +37,12 @@ export const FlattenGraphToDepthAtomFamily = (depth: number) => {
         }
 
         const connections = graph.connections.flatMap(flattenGraphArray(currentDepth));
-        const description = graph.description.flatMap(flattenGraphArray(currentDepth));
+        const descriptions = graph.descriptions.flatMap(flattenGraphArray(currentDepth));
 
         return {
           ...graph,
           connections,
-          description,
+          descriptions,
         };
       };
 

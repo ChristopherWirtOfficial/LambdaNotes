@@ -8,76 +8,77 @@ type FakeLambda = {
   id: string;
   value: string;
   connections: string[]; // IDs of connected FakeLambdas
-  description: string[]; // IDs of FakeLambdas describing this one
+  descriptions: string[]; // IDs of FakeLambdas describing this one
 };
 
 const initialUniverse: FakeLambda[] = [
   {
     id: '1',
     value: 'Universe',
-    connections: [], // No connections at root
-    description: ['2', '3', '4'], // IDs of fire, water, and earth
+    connections: ['0'], // No connections at root
+    descriptions: ['2', '3', '4'], // IDs of fire, water, and earth
   },
   {
     id: '2',
-    value: 'fire',
-    connections: ['3', '4'], // IDs of water and earth
-    description: ['5', '6'], // IDs of hot and bright
+    value: 'Fire',
+    connections: ['1', '3', '4'], // IDs of water and earth
+    descriptions: ['5', '6'], // IDs of hot and bright
   },
   {
     id: '3',
-    value: 'water',
-    connections: ['2', '4'], // IDs of fire and earth
-    description: ['7', '8'], // IDs of wet and cool
+    value: 'Water',
+    connections: ['2', '4', '5', '6'], // IDs of fire, earth, hot, bright
+    descriptions: ['7', '8'], // IDs of wet and cool
   },
   {
     id: '4',
-    value: 'earth',
-    connections: ['2', '3'], // IDs of fire and water
-    description: ['9', '10'], // IDs of solid and heavy
+    value: 'Earth',
+    connections: ['2', '3', '5', '6', '7', '8'], // IDs of fire, water, hot, bright, wet, cool
+    descriptions: ['9', '10'], // IDs of solid and heavy
   },
   {
     id: '5',
-    value: 'hot',
-    connections: [],
-    description: [],
+    value: 'Hot',
+    connections: ['2', '3', '4', '7', '8', '9', '10'], // IDs of fire, water, earth, wet, cool, solid, heavy
+    descriptions: [], // No descriptions
   },
   {
     id: '6',
-    value: 'bright',
-    connections: [],
-    description: [],
+    value: 'Bright',
+    connections: ['2', '3', '4', '7', '8', '9', '10'], // IDs of fire, water, earth, wet, cool, solid, heavy
+    descriptions: [], // No descriptions
   },
   {
     id: '7',
-    value: 'wet',
-    connections: [],
-    description: [],
+    value: 'Wet',
+    connections: ['3', '4', '5', '6'], // IDs of water, earth, hot, bright
+    descriptions: [], // No descriptions
   },
   {
     id: '8',
-    value: 'cool',
-    connections: [],
-    description: [],
+    value: 'Cool',
+    connections: ['3', '4', '5', '6'], // IDs of water, earth, hot, bright
+    descriptions: [], // No descriptions
   },
   {
     id: '9',
-    value: 'solid',
-    connections: [],
-    description: [],
+    value: 'Solid',
+    connections: ['4', '5', '6'], // IDs of earth, hot, bright
+    descriptions: [], // No descriptions
   },
   {
     id: '10',
-    value: 'heavy',
-    connections: [],
-    description: [],
+    value: 'Heavy',
+    connections: ['4', '5', '6'], // IDs of earth, hot, bright
+    descriptions: [], // No descriptions
   },
 ];
 
 const fakeIdToGuidMap = new Map<string, string>();
+
 const initialUniverseMap = new Map<string, FakeLambda>(initialUniverse.map((fl) => [fl.id, fl]));
 
-const setupUniverseRecursively = (fakeId: string, set: Setter) => {
+const setupUniverseRecursively = (parent: string, fakeId: string, set: Setter) => {
   // If this fakeId is already in the map, then we've processed this node already.
   if (fakeIdToGuidMap.has(fakeId)) {
     return fakeIdToGuidMap.get(fakeId)!;
@@ -100,18 +101,18 @@ const setupUniverseRecursively = (fakeId: string, set: Setter) => {
     id: newLambdaId,
     value: fakeLambda.value,
     connections: [], // Initialize as empty. Will populate below.
-    description: [], // Initialize as empty. Will populate below.
+    descriptions: [], // Initialize as empty. Will populate below.
   };
 
   // Recursively process the connections and descriptions, converting their fakeIds into real GUIDs.
   fakeLambda.connections.forEach((connectionId) => {
-    const realId = setupUniverseRecursively(connectionId, set);
+    const realId = setupUniverseRecursively(newLambdaId, connectionId, set);
     newLambda.connections.push(realId!);
   });
 
-  fakeLambda.description.forEach((descriptionId) => {
-    const realId = setupUniverseRecursively(descriptionId, set);
-    newLambda.description.push(realId!);
+  fakeLambda.descriptions.forEach((descriptionsId) => {
+    const realId = setupUniverseRecursively(newLambdaId, descriptionsId, set);
+    newLambda.descriptions.push(realId!);
   });
 
   // Update the newly created lambda atom with its connections and descriptions
@@ -123,18 +124,20 @@ const setupUniverseRecursively = (fakeId: string, set: Setter) => {
 export const setupLambdaUniverseAtom = atom(
   (get) => get(LambdaUniverseAtomFamily(THE_ROOT_UNIVERSE)),
   (get, set) => {
-    // Start the recursive setup process with the root node
-    const newUniverseRootId = setupUniverseRecursively('1', set); // Assuming '1' is the id of root in your initialUniverse
+    fakeIdToGuidMap.set('0', THE_ROOT_UNIVERSE); // Map the fake root ID to the real root ID
 
-    // Make the newUniverseRootId a description child of the root universe
+    // Start the recursive setup process with the root node
+    const newUniverseRootId = setupUniverseRecursively(THE_ROOT_UNIVERSE, '1', set); // Assuming '1' is the id of root in your initialUniverse
+
+    // Make the newUniverseRootId a descriptions child of the root universe
     const rootUniverseAtom = LambdaUniverseAtomFamily(THE_ROOT_UNIVERSE);
     const rootUniverse = get(rootUniverseAtom);
 
-    // Add the new root to the root universe's description
-    // use descriptionAtomFamily to modify the root lambda's description
+    // Add the new root to the root universe's descriptions
+    // use descriptionsAtomFamily to modify the root lambda's descriptions
     set(rootUniverseAtom, {
       ...rootUniverse,
-      description: [...rootUniverse.description, newUniverseRootId],
+      descriptions: [...rootUniverse.descriptions, newUniverseRootId],
     });
   }
 );

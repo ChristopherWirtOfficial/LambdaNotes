@@ -24,10 +24,10 @@ export const connectionsAtomFamily = createAtomFamily({
   setField: (lambda, newConnections) => ({ ...lambda, connections: newConnections }),
 });
 
-export const descriptionAtomFamily = createAtomFamily({
-  getField: (lambda) => lambda.description,
-  setField: (lambda, newDescription) => ({ ...lambda, description: newDescription }),
+export const descriptionsAtomFamily = createAtomFamily({
+  getField: (lambda) => lambda.descriptions,
+  setField: (lambda, newdescriptions) => ({ ...lambda, descriptions: newdescriptions }),
 });
 
 export const useAddToConnections = (id: LambdaId) => useSetAtom(connectionsAtomFamily(id));
-export const useAddToDescription = (id: LambdaId) => useSetAtom(descriptionAtomFamily(id));
+export const useAddTodescriptions = (id: LambdaId) => useSetAtom(descriptionsAtomFamily(id));

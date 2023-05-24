@@ -14,7 +14,7 @@ const useInitializeRootUniverse = () => {
     initializeRoot({
       id: THE_ROOT_UNIVERSE,
       value: 'Root Universe',
-      description: [],
+      descriptions: [],
       connections: [],
     });
   }, []);

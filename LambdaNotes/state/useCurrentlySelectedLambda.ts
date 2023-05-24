@@ -1,10 +1,10 @@
-import { Atom, Getter, WritableAtom, atom, useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { Atom, atom, useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { useEffect } from 'react';
-import { Lambda, LambdaId, LambdaUniverseAtomFamily } from './atoms';
+import { LambdaUniverseAtomFamily } from './atoms';
 import { THE_ROOT_UNIVERSE } from './useLambdaRootUniverse';
-import { LambdaPerspectiveGraphAtomFamily } from './Projections/LambdaPerspectiveGraphAtomFamily';
 import { formConnectionAtom } from './write-atoms';
 import { AtomFamily } from 'jotai/vanilla/utils/atomFamily';
+import { Lambda, LambdaId } from './types';
 
 export const CurrentlySelectedLambda = atom<LambdaId | null>(null);
 

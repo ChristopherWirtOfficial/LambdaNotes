@@ -16,18 +16,40 @@ const globalStyles = css`
   }
 `;
 
-function useMonacoDecorations(editor, notesRoot, monaco, descriptionLambasAsText) {
+const TypeScriptEditor = () => {
+  const monaco = useMonaco();
+  const editorRef = useRef<monacoEditor.IStandaloneCodeEditor>();
+  const notesRoot = useCurrentlySelectedAsRoot(NoteViewAtomFamily);
+  const updateLambdaValue = useSetAtom(directUpdateLambdaValueAtom);
+  const [editorMounted, setEditorMounted] = React.useState(false);
   const [decorationIds, setDecorationIds] = React.useState<Map<string, string>>(new Map());
 
+  const handleEditorDidMount: OnMount = (editor) => {
+    editorRef.current = editor;
+    setEditorMounted(true);
+  };
+
+  // TODO: Currently works, but none of the higher order function of the useEditorInstance hook does anything, I think
+  const handleEditorDidMountWithStore = useEditorInstance(handleEditorDidMount);
+
+  const descriptionsLambasAsText = useMemo(
+    () =>
+      notesRoot.descriptions.reduce((acc, curr) => {
+        return acc ? `${acc}\n\n${curr.value}` : curr.value;
+      }, ''),
+    [notesRoot.descriptions]
+  );
+
   useEffect(() => {
-    if (!editor || !monaco || !editor.getModel()) {
+    if (!editorMounted || !monaco || !editorRef.current) {
       return;
     }
 
+    const editor = editorRef.current;
     const model = editor.getModel();
     const newDecorationIds = new Map<string, string>();
 
-    const decorations = notesRoot.description.map((lambda, index) => {
+    const decorations = notesRoot.descriptions.map((lambda, index) => {
       const startLineNumber = 2 * index + 1;
       const endLineNumber = startLineNumber;
       const startColumn = 1;
@@ -48,40 +70,13 @@ function useMonacoDecorations(editor, notesRoot, monaco, descriptionLambasAsText
       model.deltaDecorations([...decorationIds.values()], []);
       // Add new decorations and store the ids
       const ids = model.deltaDecorations([], decorations);
-      ids.forEach((id, index) => newDecorationIds.set(notesRoot.description[index].id, id));
+      ids.forEach((id, index) => newDecorationIds.set(notesRoot.descriptions[index].id, id));
       setDecorationIds(newDecorationIds);
     }
-  }, [editor, monaco, notesRoot, descriptionLambasAsText]);
-
-  return decorationIds;
-}
-
-const TypeScriptEditor = () => {
-  const monaco = useMonaco();
-  const editorRef = useRef<monacoEditor.IStandaloneCodeEditor>();
-  const notesRoot = useCurrentlySelectedAsRoot(NoteViewAtomFamily);
-  const updateLambdaValue = useSetAtom(directUpdateLambdaValueAtom);
-  const [editorMounted, setEditorMounted] = React.useState(false);
-
-  const handleEditorDidMount: OnMount = (editor) => {
-    editorRef.current = editor;
-    setEditorMounted(true);
-  };
-
-  const handleEditorDidMountWithStore = useEditorInstance(handleEditorDidMount);
-
-  const descriptionLambasAsText = useMemo(
-    () =>
-      notesRoot.description.reduce((acc, curr) => {
-        return acc ? `${acc}\n\n${curr.value}` : curr.value;
-      }, ''),
-    [notesRoot.description]
-  );
-
-  const decorationIds = useMonacoDecorations(editorRef.current, notesRoot, monaco, descriptionLambasAsText);
+  }, [notesRoot, monaco, descriptionsLambasAsText, editorMounted]);
 
   useEffect(() => {
-    if (!editorMounted || !monaco || !editorRef.current || !editorRef.current.getModel()) {
+    if (!editorMounted || !monaco || !editorRef.current) {
       return;
     }
 
@@ -91,15 +86,15 @@ const TypeScriptEditor = () => {
     editor.onDidChangeModelContent((e: monacoEditor.IModelContentChangedEvent) => {
       e.changes.forEach((change: monacoEditor.IModelContentChange) => {
         const changedDecorations = Array.from(decorationIds.entries()).filter(([, id]) =>
-          model.getDecorationRange(id)?.intersectRanges(change.range)
+          model?.getDecorationRange(id)?.intersectRanges(change.range)
         );
 
         changedDecorations.forEach(([lambdaId, decorationId]) => {
-          const lambdaRange = model.getDecorationRange(decorationId);
+          const lambdaRange = model?.getDecorationRange(decorationId);
           if (!lambdaRange) {
             return;
           }
-          const updatedText = model.getValueInRange(lambdaRange);
+          const updatedText = model?.getValueInRange(lambdaRange);
           if (!updatedText) {
             return;
           }
@@ -115,7 +110,7 @@ const TypeScriptEditor = () => {
       <Editor
         height="90vh"
         width="50vw"
-        defaultValue={descriptionLambasAsText}
+        defaultValue={descriptionsLambasAsText}
         defaultLanguage="typescript"
         theme="vs-dark"
         onMount={handleEditorDidMountWithStore}

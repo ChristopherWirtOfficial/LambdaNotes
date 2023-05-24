@@ -1,6 +1,7 @@
 import { atom, Getter } from 'jotai';
 import { atomFamily } from 'jotai/utils';
-import { fetchLambdaAtom, Lambda, LambdaId } from '../atoms';
+import { fetchLambdaAtom } from '../atoms';
+import { Lambda, LambdaId } from '../types';
 
 export const MAX_DEPTH = 10;
 
@@ -26,7 +27,7 @@ export const LambdaPerspectiveGraphAtomFamily = atomFamily((rootLambdaId: Lambda
         id: lambdaAtom.id,
         value: lambdaAtom.value,
         depth: depth,
-        description: [],
+        descriptions: [],
         connections: [],
       };
 
@@ -35,11 +36,11 @@ export const LambdaPerspectiveGraphAtomFamily = atomFamily((rootLambdaId: Lambda
       }
 
       // BFS for descriptions
-      const descriptionIdsToRun = lambdaAtom.description.filter((descId) =>
+      const descriptionsIdsToRun = lambdaAtom.descriptions.filter((descId) =>
         checkVisitedAndExecFunc(() => descId)(descId)
       );
 
-      lambda.description = descriptionIdsToRun
+      lambda.descriptions = descriptionsIdsToRun
         .map((descId) => buildGraph(get, descId, depth + 1))
         .filter(Boolean) as Lambda[];
 

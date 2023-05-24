@@ -23,7 +23,7 @@ export const useAddLambda = ({ addToCategory }: UseAddLambdaOptions) => {
       const newLambda: Omit<LambdaAtom, 'id'> = {
         value: inputValue,
         connections: [],
-        description: [],
+        descriptions: [],
       };
 
       const newLambdaId = createLambda(newLambda);
