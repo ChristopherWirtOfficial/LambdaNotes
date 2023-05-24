@@ -75,51 +75,67 @@ const initialUniverse: FakeLambda[] = [
 ];
 
 const fakeIdToGuidMap = new Map<string, string>();
+const initialUniverseMap = new Map<string, FakeLambda>(initialUniverse.map((fl) => [fl.id, fl]));
 
-const createLambdaFromFake = (set: Setter, fakeLambda: FakeLambda) => {
+const setupUniverseRecursively = (fakeId: string, set: Setter) => {
+  // If this fakeId is already in the map, then we've processed this node already.
+  if (fakeIdToGuidMap.has(fakeId)) {
+    return fakeIdToGuidMap.get(fakeId)!;
+  }
+
+  // Fetch the FakeLambda
+  const fakeLambda = initialUniverseMap.get(fakeId);
+  if (!fakeLambda) {
+    throw new Error(`Invalid fakeId: ${fakeId}`);
+  }
+
   // Generate a new GUID for the lambda
   const newLambdaId = uuidv4();
-  // Map the fake ID to the newly generated GUID
-  fakeIdToGuidMap.set(fakeLambda.id, newLambdaId);
 
-  // Create a new lambda atom with the value from the fake lambda
-  const newLambda: Omit<LambdaAtom, 'id'> = {
+  // Map the fake ID to the newly generated GUID
+  fakeIdToGuidMap.set(fakeId, newLambdaId);
+
+  // Create a new lambda atom
+  const newLambda: LambdaAtom = {
+    id: newLambdaId,
     value: fakeLambda.value,
-    connections: fakeLambda.connections, // Store the original IDs, will be replaced later
-    description: fakeLambda.description, // Store the original IDs, will be replaced later
+    connections: [], // Initialize as empty. Will populate below.
+    description: [], // Initialize as empty. Will populate below.
   };
 
-  // Initialize the corresponding entry in the AtomFamily
-  set(LambdaUniverseAtomFamily(newLambdaId), {
-    id: newLambdaId,
-    ...newLambda,
+  // Recursively process the connections and descriptions, converting their fakeIds into real GUIDs.
+  fakeLambda.connections.forEach((connectionId) => {
+    const realId = setupUniverseRecursively(connectionId, set);
+    newLambda.connections.push(realId!);
   });
 
-  // Return the new lambda's ID so it can be used elsewhere if needed
+  fakeLambda.description.forEach((descriptionId) => {
+    const realId = setupUniverseRecursively(descriptionId, set);
+    newLambda.description.push(realId!);
+  });
+
+  // Update the newly created lambda atom with its connections and descriptions
+  set(LambdaUniverseAtomFamily(newLambdaId), newLambda);
+
   return newLambdaId;
 };
 
 export const setupLambdaUniverseAtom = atom(
   (get) => get(LambdaUniverseAtomFamily(THE_ROOT_UNIVERSE)),
   (get, set) => {
-    // Create the atoms for all FakeLambdas in the initialUniverse
-    initialUniverse.forEach((fakeLambda) => createLambdaFromFake(set, fakeLambda));
+    // Start the recursive setup process with the root node
+    const newUniverseRootId = setupUniverseRecursively('1', set); // Assuming '1' is the id of root in your initialUniverse
 
-    // Now, all atoms have been created, and we can replace the old IDs in their connections and descriptions with the actual GUIDs.
-    fakeIdToGuidMap.forEach((newId, oldId) => {
-      const lambda = get(LambdaUniverseAtomFamily(newId));
-      lambda.connections = lambda.connections.map((oldConnectionId) => fakeIdToGuidMap.get(oldConnectionId)!);
-      lambda.description = lambda.description.map((oldDescriptionId) => fakeIdToGuidMap.get(oldDescriptionId)!);
-      set(LambdaUniverseAtomFamily(newId), lambda);
+    // Make the newUniverseRootId a description child of the root universe
+    const rootUniverseAtom = LambdaUniverseAtomFamily(THE_ROOT_UNIVERSE);
+    const rootUniverse = get(rootUniverseAtom);
+
+    // Add the new root to the root universe's description
+    // use descriptionAtomFamily to modify the root lambda's description
+    set(rootUniverseAtom, {
+      ...rootUniverse,
+      description: [...rootUniverse.description, newUniverseRootId],
     });
-
-    // Connect the "Universe" to the "Root" (THE_ROOT_UNIVERSE)
-    const rootAtom = get(LambdaUniverseAtomFamily(THE_ROOT_UNIVERSE));
-    const universeId = fakeIdToGuidMap.get(initialUniverse[0].id); // Get Universe ID directly from initial setup
-    if (universeId) {
-      rootAtom.connections.push(universeId);
-      set(LambdaUniverseAtomFamily(THE_ROOT_UNIVERSE), rootAtom);
-    }
   }
 );
 
@@ -128,7 +144,7 @@ export const useInitialSetup = () => {
 
   useEffect(() => {
     setupLambdaUniverse();
-  }, []);
+  }, [setupLambdaUniverse]);
 };
 
 export default useInitialSetup;

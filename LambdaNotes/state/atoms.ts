@@ -1,20 +1,23 @@
-import { Getter, atom } from 'jotai';
-import { atomFamily, selectAtom } from 'jotai/utils';
+import { atom } from 'jotai';
+import { atomFamily } from 'jotai/utils';
 
 export type LambdaId = string;
 
+// This is the type for a successful projection of a Lambda into a projected Lattice
+// This is the lambda "fully realized" in the projection given. This is the semi-directed graph version of the lambda.
 export interface Lambda {
   id: LambdaId;
   value: string;
-  depth: number;
-  description: Lambda[];
-  connections: Lambda[];
+  depth: number; // The depth in the given projection of this lambda (only availalbe in a projection, any lattice can be seen as "root")
+  description: Lambda[]; // description Lambdas see this lambda in their `connections` array, but not vice versa
+  connections: Lambda[]; // siblings or peers, effectively. More abstract.
 }
 
+// The actual version of the lambda that isn't recursively defined, and can actually be serialized and stored.
 export interface LambdaAtom {
   id: LambdaId;
   value: string;
-  depth?: number;
+  // depth?: number; // Leaving out for now because it only caused confusion about what it was for
   description: LambdaId[]; // ids of description Lambdas
   connections: LambdaId[]; // ids of connected Lambdas
 }
@@ -29,49 +32,10 @@ export const LambdaUniverseAtomFamily = atomFamily((id: LambdaId) =>
   })
 );
 
-const MAX_DEPTH = 10;
+export * from './read-atoms';
+export * from './LambdaAtomSelectors';
+export * from './write-atoms';
 
-// This atomFamily creates a unidirectional graph of lambdas connected from a given lambda as the root, recursively.
-export const LambdaPerspectiveGraphAtomFamily = atomFamily((rootLambdaAtom: LambdaAtom) => {
-  // This set stores all the visited lambda IDs.
+export * from './projection-atoms';
 
-  return atom((get) => {
-    const visited = new Set<LambdaId>();
-
-    const buildGraph = (get: Getter, lambdaId: LambdaId, depth = 0) => {
-      const lambdaAtom = get(selectAtom(LambdaUniverseAtomFamily(lambdaId), (v) => v));
-
-      // If this node has already been visited, we stop traversing this path.
-      if (visited.has(lambdaAtom.id)) {
-        return undefined;
-      }
-
-      const lambda: Lambda = {
-        id: lambdaAtom.id,
-        value: lambdaAtom.value,
-        depth: depth,
-        description: [],
-        connections: [],
-      };
-
-      // Mark the current node as visited.
-      visited.add(lambdaAtom.id);
-
-      if (depth > MAX_DEPTH) {
-        throw new Error('Maximum depth exceeded');
-      }
-
-      lambda.description = lambdaAtom.description
-        .map((descId: string) => buildGraph(get, descId, depth + 1))
-        .filter(Boolean) as Lambda[]; // filter out undefined nodes
-
-      lambda.connections = lambdaAtom.connections
-        .map((connId: string) => buildGraph(get, connId, depth + 1))
-        .filter(Boolean) as Lambda[]; // filter out undefined nodes
-
-      return lambda;
-    };
-
-    return buildGraph(get, rootLambdaAtom.id);
-  });
-});
+export * from './Projections';

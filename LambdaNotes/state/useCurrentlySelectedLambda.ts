@@ -1,7 +1,10 @@
-import { atom, useAtom, useSetAtom } from 'jotai';
+import { Atom, Getter, WritableAtom, atom, useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { useEffect } from 'react';
-import { LambdaId } from './atoms';
-import { addToConnectionsAtom, formConnectionAtom } from './write-atoms';
+import { Lambda, LambdaId, LambdaUniverseAtomFamily } from './atoms';
+import { THE_ROOT_UNIVERSE } from './useLambdaRootUniverse';
+import { LambdaPerspectiveGraphAtomFamily } from './Projections/LambdaPerspectiveGraphAtomFamily';
+import { formConnectionAtom } from './write-atoms';
+import { AtomFamily } from 'jotai/vanilla/utils/atomFamily';
 
 export const CurrentlySelectedLambda = atom<LambdaId | null>(null);
 
@@ -55,4 +58,20 @@ export const useHandleLambdaClick = (id: LambdaId) => {
       setSelectedLambda(id);
     }
   };
+};
+
+export const useCurrentlySelectedAsRoot = (
+  projectionAtomFamily: AtomFamily<LambdaId, Atom<Lambda> | Atom<Lambda | undefined>>
+) => {
+  const currentlySelectedId = useAtomValue(CurrentlySelectedLambda);
+  const currentlySelectedLambda = useAtomValue(LambdaUniverseAtomFamily(currentlySelectedId || THE_ROOT_UNIVERSE));
+
+  const projectionAtom = projectionAtomFamily(currentlySelectedLambda.id);
+  const rootUniverse = useAtomValue(projectionAtom);
+
+  if (!rootUniverse) {
+    throw new Error('No root universe found');
+  }
+
+  return rootUniverse;
 };
