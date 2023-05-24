@@ -1,5 +1,5 @@
 import { Flex, Heading, VStack } from '@chakra-ui/react';
-import React, { FC } from 'react';
+import React from 'react';
 
 import LambdaUniverse from './LambdaUniverse';
 import { useCurrentlySelectedAsRoot, useGlobalLambdaClickHandling } from './state/useCurrentlySelectedLambda';

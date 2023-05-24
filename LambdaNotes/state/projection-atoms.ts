@@ -1,6 +1,7 @@
 import { atomFamily } from 'jotai/utils';
 import { atom } from 'jotai';
-import { LambdaId, fetchLambdaAtom, updateLambdaAtom } from './atoms';
+import { fetchLambdaAtom, updateLambdaAtom } from './atoms';
+import { LambdaId } from './types';
 
 type ArrayKeysLambdaAtom = 'descriptions' | 'connections';
 

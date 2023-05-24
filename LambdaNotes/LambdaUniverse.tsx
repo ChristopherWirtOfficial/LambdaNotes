@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
 import { useAtom } from 'jotai';
-import { Lambda } from './state/atoms';
+import { Lambda } from './state/types';
 import {
   CurrentlyFormingConnection,
   CurrentlySelectedLambda,

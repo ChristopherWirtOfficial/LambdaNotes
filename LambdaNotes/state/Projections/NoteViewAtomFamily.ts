@@ -1,13 +1,8 @@
 import { atom } from 'jotai';
 import { atomFamily } from 'jotai/utils';
-import {
-  Lambda,
-  LambdaAtom,
-  LambdaId,
-  LambdaPerspectiveGraphAtomFamily,
-  descriptionsProjection,
-  fetchLambdaAtom,
-} from '../atoms';
+import { LambdaPerspectiveGraphAtomFamily, descriptionsProjection, fetchLambdaAtom } from '../atoms';
+
+import { Lambda, LambdaAtom, LambdaId } from '../types';
 
 export const MAX_DEPTH = 10;
 

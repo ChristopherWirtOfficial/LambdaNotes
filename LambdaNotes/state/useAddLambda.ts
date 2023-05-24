@@ -1,7 +1,7 @@
 // state/useAddLambda.ts
 import { useState } from 'react';
 import { useSetAtom } from 'jotai';
-import { LambdaAtom } from './atoms';
+import { LambdaAtom } from './types';
 import { createAndInitializeLambdaAtom } from './write-atoms';
 
 type UseAddLambdaOptions = {

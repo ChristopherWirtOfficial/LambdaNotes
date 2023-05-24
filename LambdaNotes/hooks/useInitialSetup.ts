@@ -1,8 +1,9 @@
 import { Setter, atom, useAtom } from 'jotai';
-import { LambdaAtom, LambdaUniverseAtomFamily } from '../state/atoms';
+import { LambdaUniverseAtomFamily } from '../state/atoms';
 import uuidv4 from '../helpers/uuid';
 import { THE_ROOT_UNIVERSE } from '../state/useLambdaRootUniverse';
 import { useEffect } from 'react';
+import { LambdaAtom } from '../state';
 
 type FakeLambda = {
   id: string;

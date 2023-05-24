@@ -1,4 +1,4 @@
-import { LambdaAtom } from './atoms';
+import { LambdaAtom } from './types';
 
 // Clears a vector
 export const clearVector =

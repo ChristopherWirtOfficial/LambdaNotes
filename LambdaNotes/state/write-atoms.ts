@@ -5,8 +5,9 @@
 
 import { atom } from 'jotai';
 import { atomFamily } from 'jotai/utils';
-import { fetchLambdaAtom, LambdaAtom, LambdaId, LambdaUniverseAtomFamily } from './atoms';
+import { fetchLambdaAtom, LambdaUniverseAtomFamily } from './atoms';
 import uuidv4 from '../helpers/uuid';
+import { LambdaAtom, LambdaId } from './types';
 
 export type LambdaAtomWithOptionalId = Omit<LambdaAtom, 'id'> & Partial<Pick<LambdaAtom, 'id'>>;
 
