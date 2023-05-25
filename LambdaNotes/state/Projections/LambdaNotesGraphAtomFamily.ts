@@ -4,8 +4,6 @@ import { LambdaPerspectiveGraphAtomFamily, descriptionsProjection, fetchLambdaAt
 
 import { Lambda, LambdaAtom, LambdaId } from '../types';
 
-export const MAX_DEPTH = 10;
-
 // Higher-Order FlattenToDepthAtomFamily
 export const FlattenGraphToDepthAtomFamily = (depth: number) => {
   const flattenToDepthAtomFamily = atomFamily((rootLambdaAtom: LambdaAtom) =>
@@ -58,8 +56,8 @@ export const FlattenGraphToDepthAtomFamily = (depth: number) => {
 // This is the number of levels deep to flatten the graph before just allowing the nodes are no longer flattened.
 export const NoteViewFlattenDepthAtom = atom(0);
 export const NoteViewFlattenInfinitelyAtom = atom(true);
-// NoteViewAtomFamily
-export const NoteViewAtomFamily = atomFamily((rootLambdaId: LambdaId) =>
+
+export const LambdaNotesGraphAtomFamily = atomFamily((rootLambdaId: LambdaId) =>
   atom((get) => {
     const flattenInfinitely = get(NoteViewFlattenInfinitelyAtom);
     const NOTE_VIEW_DEPTH = flattenInfinitely ? Infinity : get(NoteViewFlattenDepthAtom);

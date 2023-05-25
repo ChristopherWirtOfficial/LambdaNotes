@@ -1,9 +1,10 @@
 // BaseView.tsx
 import React from 'react';
-import { VStack, Heading, HStack, Box, Input } from '@chakra-ui/react';
+import { VStack, HStack, Box, Input } from '@chakra-ui/react';
 import { useAddLambda } from '../state/useAddLambda';
 import LambdaUniverse from '../LambdaUniverse';
 import { Lambda } from '../state';
+import { getDefinition } from '../Dictionary/getDefinition';
 
 interface BaseViewProps {
   lambda: Lambda;

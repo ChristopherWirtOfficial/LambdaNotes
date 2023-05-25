@@ -53,6 +53,10 @@ const findPathWithVisitedChecks = () => {
 
   return findPath;
 };
+const middlePathIndex = (path) => {
+  if (!path) return null;
+  return Math.floor(path.length / 2);
+};
 
 export const LambdaAccordionGraphAtomFamily = (lambdaBId: LambdaId) =>
   atomFamily((lambdaAId: LambdaId) =>
@@ -61,71 +65,34 @@ export const LambdaAccordionGraphAtomFamily = (lambdaBId: LambdaId) =>
       const graphB = get(LambdaPerspectiveGraphAtomFamily(lambdaBId));
 
       if (!graphA || !graphB) {
-        // Should actually be impossible, since the atomFamily should always return a value on new lambdaIds.
-        // Only real way to get here is to have a lambdaId that doesn't exist in the state ANYMORE but used to.
         throw new Error(`Graph not found for [${lambdaAId}]: ${graphA} or [${lambdaBId}]: ${graphB}`);
       }
 
       const pathAtoB = findPathWithVisitedChecks()(graphA, lambdaBId);
       const pathBtoA = findPathWithVisitedChecks()(graphB, lambdaAId);
 
-      const queueA: Lambda[] = pathAtoB ?? [graphA];
-      const queueB: Lambda[] = pathBtoA ?? [graphB];
+      console.log('find path', { pathAtoB, pathBtoA });
+
+      if (!pathAtoB || !pathBtoA) {
+        throw new Error(`Bi-directional path(s) not found between [${lambdaAId}] and [${lambdaBId}]`);
+      }
+
+      const midA = middlePathIndex(pathAtoB);
+      const midB = middlePathIndex(pathBtoA);
+
+      if (midA === null || midB === null) {
+        throw new Error(`Paths not found between [${lambdaAId}] and [${lambdaBId}]`);
+      }
+
+      const queueA: Lambda[] = [pathAtoB[midA]];
+      const queueB: Lambda[] = [pathBtoA[midB]];
 
       const visited = new Map<LambdaId, 'A' | 'B'>();
-      visited.set(graphA.id, 'A');
-      visited.set(graphB.id, 'B');
+      visited.set(queueA[0].id, 'A');
+      visited.set(queueB[0].id, 'B');
 
-      console.log('Done trying to pathfind', {
-        pathAtoB,
-        pathBtoA,
-      });
+      // TODO: BFS from each side by alternating between the two queues to form an exhaustive accordion graph that contains ALL nodes in the lattice (since A and B are both fully connected to the lattice, bi-directionally)
 
-      // while (queueA.length && queueB.length) {
-      //   const currentA = queueA.shift()!;
-      //   const currentB = queueB.shift()!;
-
-      //   if (visited.has(currentB.id) && visited.get(currentB.id) === 'A') {
-      //     const pathA = findPath(graphA, currentB.id);
-      //     const pathB = findPath(graphB, currentB.id);
-      //     if (pathA && pathB) {
-      //       con
-      //     }
-      //   }
-
-      //   const currentMaxLayer = Math.max(currentA.depth, currentB.depth);
-      //   const furthestKnownLayer = [...queueA, ...queueB].reduce(
-      //     (acc, curr) => Math.max(acc, curr.depth, currentMaxLayer),
-      //     0
-      // );
-
-      //   if (currentA.depth > furthestKnownLayer) {
-      //     // Just add it back to the queue, we have more to explore in this layer across the overall queue
-      //     queueA.push(currentA);
-      //   } else {
-      //     currentA.descriptions
-      //       .map((descId) => buildGraph(get, descId, depthA + 1))
-      //       .filter(Boolean)
-      //       .forEach((descLambda) => {
-      //         visited.set(descLambda.id, 'A');
-      //         queueA.push(descLambda);
-      //       });
-      //   }
-
-      //   if (depthB <= MAX_DEPTH) {
-      //     currentB.descriptions
-      //       .map((descId) => buildGraph(get, descId, depthB + 1))
-      //       .filter(Boolean)
-      //       .forEach((descLambda) => {
-      //         visited.set(descLambda.id, 'B');
-      //         queueB.push(descLambda);
-      //       });
-      //     depthB += 1;
-      //   }
-      // }
-
-      // throw new Error('Paths not found');
-
-      return graphA;
+      return graphA; // TODO: return the constructed accordion graph
     })
   );

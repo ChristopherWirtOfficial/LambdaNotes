@@ -6,6 +6,31 @@ import { formConnectionAtom } from './write-atoms';
 import { AtomFamily } from 'jotai/vanilla/utils/atomFamily';
 import { Lambda, LambdaId } from './types';
 
+import StandardPerspectiveView from '../ProjectionViews/StandardPerspectiveView';
+import AccordionView from '../ProjectionViews/AccordionView';
+import NotesView from '../ProjectionViews/NotesProjectionView';
+
+import {
+  LambdaPerspectiveGraphAtomFamily,
+  LambdaAccordionGraphAtomFamily,
+  LambdaNotesGraphAtomFamily,
+} from '../state/Projections';
+
+export const LAMBDA_VIEWS = {
+  AccordionView,
+  StandardPerspectiveView,
+  NotesView,
+};
+
+type ViewKeys = keyof typeof LAMBDA_VIEWS;
+type ProjectionAtomFamilyType = AtomFamily<LambdaId, Atom<Lambda> | Atom<Lambda | undefined>>;
+
+export const LAMBDA_PROJECTIONS: Record<ViewKeys, ProjectionAtomFamilyType> = {
+  AccordionView: LambdaAccordionGraphAtomFamily(THE_ROOT_UNIVERSE),
+  StandardPerspectiveView: LambdaPerspectiveGraphAtomFamily,
+  NotesView: LambdaNotesGraphAtomFamily,
+};
+
 export const CurrentlySelectedLambda = atom<LambdaId | null>(null);
 
 export const CurrentlyFormingConnection = atom<LambdaId | null>(null);
@@ -74,4 +99,13 @@ export const useCurrentlySelectedAsRoot = (
   }
 
   return rootUniverse;
+};
+
+// Define a new atom to hold the current selection of projection.
+export const currentProjectionAtom = atom<keyof typeof LAMBDA_VIEWS>('NotesView');
+
+// A hook to get the current projection.
+
+export const useCurrentProjection = () => {
+  return LAMBDA_PROJECTIONS[useAtomValue(currentProjectionAtom)];
 };

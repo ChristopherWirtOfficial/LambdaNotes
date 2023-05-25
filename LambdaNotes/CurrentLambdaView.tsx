@@ -2,20 +2,7 @@
 import React, { FC } from 'react';
 import { useAtom } from 'jotai';
 import { VStack, Heading, Select } from '@chakra-ui/react';
-import { atom } from 'jotai';
-
-import StandardPerspectiveView from './ProjectionViews/StandardPerspectiveView';
-import AccordionView from './ProjectionViews/AccordionView';
-import NotesView from './ProjectionViews/NotesView';
-
-const LAMBDA_VIEWS = {
-  AccordionView,
-  StandardPerspectiveView,
-  NotesView,
-};
-
-// Define a new atom to hold the current selection of projection.
-const currentProjectionAtom = atom<keyof typeof LAMBDA_VIEWS>('NotesView');
+import { LAMBDA_VIEWS, currentProjectionAtom } from './state/useCurrentlySelectedLambda';
 
 export const CurrentLambdaView: FC = () => {
   const [currentProjection, setCurrentProjection] = useAtom(currentProjectionAtom);

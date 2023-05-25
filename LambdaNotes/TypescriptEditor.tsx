@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { VStack } from '@chakra-ui/react';
 import Editor, { OnMount, useMonaco } from '@monaco-editor/react';
 import { useCurrentlySelectedAsRoot } from './state/useCurrentlySelectedLambda';
-import { NoteViewAtomFamily } from './state/Projections/NoteViewAtomFamily';
+import { LambdaNotesGraphAtomFamily } from './state/Projections/LambdaNotesGraphAtomFamily';
 import { useSetAtom } from 'jotai';
 import { directUpdateLambdaValueAtom } from './state/write-atoms';
 import { Global, css } from '@emotion/react';
@@ -19,7 +19,7 @@ const globalStyles = css`
 const TypeScriptEditor = () => {
   const monaco = useMonaco();
   const editorRef = useRef<monacoEditor.IStandaloneCodeEditor>();
-  const notesRoot = useCurrentlySelectedAsRoot(NoteViewAtomFamily);
+  const notesRoot = useCurrentlySelectedAsRoot(LambdaNotesGraphAtomFamily);
   const updateLambdaValue = useSetAtom(directUpdateLambdaValueAtom);
   const [editorMounted, setEditorMounted] = React.useState(false);
   const [decorationIds, setDecorationIds] = React.useState<Map<string, string>>(new Map());

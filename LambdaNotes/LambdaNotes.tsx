@@ -6,19 +6,21 @@ import { useCurrentlySelectedAsRoot, useGlobalLambdaClickHandling } from './stat
 import useLambdaRootUniverse from './state/useLambdaRootUniverse';
 import CurrentLambdaView from './CurrentLambdaView';
 import TypeScriptEditor from './TypescriptEditor';
-import { NoteViewAtomFamily } from './state/Projections/NoteViewAtomFamily';
+import { LambdaNotesGraphAtomFamily } from './state/Projections/LambdaNotesGraphAtomFamily';
+import CurrentlySelectedDefinitions from './Dictionary/CurrentlySelectedDefinitions';
 
 const LambdaNotes: React.FC = () => {
   useGlobalLambdaClickHandling();
 
   const rootLambdaUniverse = useLambdaRootUniverse();
 
-  const notesRoot = useCurrentlySelectedAsRoot(NoteViewAtomFamily);
+  const notesRoot = useCurrentlySelectedAsRoot(LambdaNotesGraphAtomFamily);
 
   return (
     <VStack bg="blackAlpha.800" color="whiteAlpha.800">
       <Flex>
-        <TypeScriptEditor key={notesRoot.id} />
+        {/* <TypeScriptEditor key={notesRoot.id} /> */}
+        <CurrentlySelectedDefinitions />
         <CurrentLambdaView />
       </Flex>
       <Flex w="100vw" minH="100vh" p={10} justifyContent="space-between" gap={8}>

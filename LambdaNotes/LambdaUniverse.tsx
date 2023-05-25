@@ -1,13 +1,14 @@
 import React, { FC } from 'react';
-import { useAtom } from 'jotai';
+import { useAtom, useSetAtom } from 'jotai';
 import { Lambda } from './state/types';
 import {
   CurrentlyFormingConnection,
   CurrentlySelectedLambda,
   useHandleLambdaClick,
 } from './state/useCurrentlySelectedLambda';
-import { ListItem, Box, List, VStack } from '@chakra-ui/react';
+import { ListItem, Box, List, Button, VStack } from '@chakra-ui/react';
 import { LinkIcon } from '@chakra-ui/icons';
+import { getDefinition, getDefinitionAtom } from './Dictionary/getDefinition';
 
 type LambdaListProps = {
   lambdas: Lambda[];
@@ -43,10 +44,23 @@ const LambdaUniverse: FC<{ lambda: Lambda }> = ({ lambda }) => {
     }
   };
 
+  const getDefinition = useSetAtom(getDefinitionAtom);
+
+  const getDef = async () => {
+    console.log('Getting definition for', lambda.value);
+
+    const definition = await getDefinition(lambda);
+
+    console.log('definition', definition);
+  };
+
   return (
     <Box w="100%" h="100%" borderWidth={isSelected ? '3px' : '1px'} borderColor={isSelected ? 'white' : 'darkgray'}>
       <Box p="1" onClick={handleLambdaClick}>
         {value} <LinkIcon onClick={handleIconClick} color={formingConnection === id ? 'blue.500' : 'gray.500'} />
+      </Box>
+      <Box p={1} onClick={getDef}>
+        Get definition
       </Box>
       <VStack align="start" spacing={4}>
         <List>

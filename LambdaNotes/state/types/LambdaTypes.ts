@@ -1,3 +1,5 @@
+// LambdaTypes.ts
+
 export type LambdaId = string;
 
 // This is the type for a successful projection of a Lambda into a projected Lattice

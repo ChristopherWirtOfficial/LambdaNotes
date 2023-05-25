@@ -1,12 +1,12 @@
 // NotesView.tsx
 import React from 'react';
 import { BaseView } from './BaseView';
-import { NoteViewAtomFamily } from '../state/Projections/NoteViewAtomFamily';
+import { LambdaNotesGraphAtomFamily } from '../state/Projections/LambdaNotesGraphAtomFamily';
 import { useCurrentlySelectedAsRoot } from '../state/useCurrentlySelectedLambda';
 import { useAddToConnections, useAddTodescriptions } from '../hooks/useModifyLambdas';
 
 export const NotesView: React.FC = () => {
-  const noteViewLambda = useCurrentlySelectedAsRoot(NoteViewAtomFamily);
+  const noteViewLambda = useCurrentlySelectedAsRoot(LambdaNotesGraphAtomFamily);
   const addToConnections = useAddToConnections(noteViewLambda.id);
   const addTodescriptions = useAddTodescriptions(noteViewLambda.id);
 
