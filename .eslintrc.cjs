@@ -7,5 +7,6 @@ module.exports = {
   rules: {
     'react-refresh/only-export-components': 'warn',
     'no-multiple-empty-lines': ['error', { max: 4 }],
+    'no-prototype-builtins': 'off',
   },
 };

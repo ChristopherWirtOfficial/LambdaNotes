@@ -4,7 +4,6 @@ import { VStack, HStack, Box, Input } from '@chakra-ui/react';
 import { useAddLambda } from '../state/useAddLambda';
 import LambdaUniverse from '../LambdaUniverse';
 import { Lambda } from '../state';
-import { getDefinition } from '../Dictionary/getDefinition';
 
 interface BaseViewProps {
   lambda: Lambda;
@@ -13,13 +12,13 @@ interface BaseViewProps {
 }
 
 export const BaseView: React.FC<BaseViewProps> = ({ lambda, addToConnections, addTodescriptions }) => {
-  const connection = useAddLambda({
+  const connectionContext = useAddLambda({
     addToCategory: (newLambdaId: string) => {
       addToConnections(newLambdaId);
     },
   });
 
-  const descriptions = useAddLambda({
+  const descriptionContext = useAddLambda({
     addToCategory: (newLambdaId: string) => {
       addTodescriptions(newLambdaId);
     },
@@ -30,14 +29,22 @@ export const BaseView: React.FC<BaseViewProps> = ({ lambda, addToConnections, ad
       <HStack spacing={6}>
         <VStack>
           <Box>Add Connection</Box>
-          <form onSubmit={connection.handleFormSubmit}>
-            <Input value={connection.inputValue} onChange={connection.handleInputChange} placeholder="Add new..." />
+          <form onSubmit={connectionContext.handleFormSubmit}>
+            <Input
+              value={connectionContext.inputValue}
+              onChange={connectionContext.handleInputChange}
+              placeholder="Add new..."
+            />
           </form>
         </VStack>
         <VStack>
-          <Box>Add descriptions</Box>
-          <form onSubmit={descriptions.handleFormSubmit}>
-            <Input value={descriptions.inputValue} onChange={descriptions.handleInputChange} placeholder="Add new..." />
+          <Box>Add Description</Box>
+          <form onSubmit={descriptionContext.handleFormSubmit}>
+            <Input
+              value={descriptionContext.inputValue}
+              onChange={descriptionContext.handleInputChange}
+              placeholder="Add new..."
+            />
           </form>
         </VStack>
       </HStack>

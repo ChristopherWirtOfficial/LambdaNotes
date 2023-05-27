@@ -13,21 +13,28 @@ export type LambdaAtomWithOptionalId = Omit<LambdaAtom, 'id'> & Partial<Pick<Lam
 
 // Update a lambda atom by ID
 export const updateLambdaAtom = atomFamily((lambdaId: LambdaId) => {
-  return atom(
-    (get) => get(fetchLambdaAtom(lambdaId)),
-    (get, set, update: Partial<LambdaAtom>) => {
-      const lambda = get(fetchLambdaAtom(lambdaId));
-      set(LambdaUniverseAtomFamily(lambdaId), { ...lambda, ...update });
-    }
-  );
+  return atom(undefined, (get, set, update: Partial<LambdaAtom>) => {
+    const lambda = get(fetchLambdaAtom(lambdaId));
+    set(LambdaUniverseAtomFamily(lambdaId), { ...lambda, ...update });
+  });
 });
+
+// Atom to directly update a lambda's value given an id and the new value
+// Useful when you don't know which lambda you'll be updating when you establish the useSetAtom hook
+export const directUpdateLambdaValueAtom = atom(
+  undefined,
+  (get, set, { lambdaId, newValue }: { lambdaId: LambdaId; newValue: string }) => {
+    const oldLambda = get(fetchLambdaAtom(lambdaId));
+    set(updateLambdaAtom(lambdaId), { ...oldLambda, value: newValue });
+  }
+);
 
 // Atom to form a connection between two lambdas
 export const formConnectionAtom = atom(
   undefined,
   (get, set, { lambda1Id, lambda2Id }: { lambda1Id: LambdaId; lambda2Id: LambdaId }) => {
-    const lambda1 = get(LambdaUniverseAtomFamily(lambda1Id));
-    const lambda2 = get(LambdaUniverseAtomFamily(lambda2Id));
+    const lambda1 = get(fetchLambdaAtom(lambda1Id));
+    const lambda2 = get(fetchLambdaAtom(lambda2Id));
     const updatedLambda1 = {
       ...lambda1,
       connections: Array.from(new Set([...lambda1.connections, lambda2Id])),
@@ -38,6 +45,26 @@ export const formConnectionAtom = atom(
     };
     set(LambdaUniverseAtomFamily(lambda1Id), updatedLambda1);
     set(LambdaUniverseAtomFamily(lambda2Id), updatedLambda2);
+  }
+);
+
+export const formDescriptionAtom = atom(
+  undefined,
+  (get, set, { lambdaId, descriptionId }: { lambdaId: LambdaId; descriptionId: LambdaId }) => {
+    const lambda = get(fetchLambdaAtom(lambdaId));
+    const updatedLambda = {
+      ...lambda,
+      descriptions: Array.from(new Set([...lambda.descriptions, descriptionId])),
+    };
+
+    const descriptionLambda = get(fetchLambdaAtom(descriptionId));
+    const updatedLambda2 = {
+      ...descriptionLambda,
+      connections: Array.from(new Set([...descriptionLambda.connections, lambdaId])),
+    };
+
+    set(LambdaUniverseAtomFamily(lambdaId), updatedLambda);
+    set(LambdaUniverseAtomFamily(descriptionId), updatedLambda2);
   }
 );
 
@@ -64,14 +91,5 @@ export const breakConnectionAtom = atom(
     };
     set(updateLambdaAtom(lambda1Id), updatedLambda1);
     set(updateLambdaAtom(lambda2Id), updatedLambda2);
-  }
-);
-
-// Atom to directly update a lambda's value given an id and the new value
-export const directUpdateLambdaValueAtom = atom(
-  undefined,
-  (get, set, { lambdaId, newValue }: { lambdaId: LambdaId; newValue: string }) => {
-    const oldLambda = get(fetchLambdaAtom(lambdaId));
-    set(updateLambdaAtom(lambdaId), { ...oldLambda, value: newValue });
   }
 );

@@ -1,6 +1,7 @@
 import { Getter, Setter, atom, useSetAtom } from 'jotai';
-import { fetchLambdaAtom, updateLambdaAtom, LambdaAtom, LambdaId } from '../state/atoms';
+import { fetchLambdaAtom, updateLambdaAtom } from '../state/atoms';
 import { atomFamily } from 'jotai/utils';
+import { LambdaAtom, LambdaId } from '../state';
 
 export interface AtomFactoryParams {
   getField: (lambda: LambdaAtom) => LambdaId[];
@@ -29,5 +30,8 @@ export const descriptionsAtomFamily = createAtomFamily({
   setField: (lambda, newdescriptions) => ({ ...lambda, descriptions: newdescriptions }),
 });
 
+// TODO: Any given new description needs to use `formDescription`, and any given connection needs to use `formConnection`
+//        This is super important because every connection of kind is always considered bi-directional in one way or another
+//          forcing the lattice to always be fully connected from ANY Lambda in the lattice.
 export const useAddToConnections = (id: LambdaId) => useSetAtom(connectionsAtomFamily(id));
 export const useAddTodescriptions = (id: LambdaId) => useSetAtom(descriptionsAtomFamily(id));
