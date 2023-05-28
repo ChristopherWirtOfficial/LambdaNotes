@@ -2,15 +2,20 @@
 import { useState } from 'react';
 import { useSetAtom } from 'jotai';
 import { LambdaAtom } from './types';
-import { createAndInitializeLambdaAtom } from './write-atoms';
+import { createAndInitializeLambdaAtom, formConnectionAtom, formDescriptionAtom } from './write-atoms';
+
+export type LambdaRelationshipType = 'connection' | 'description';
 
 type UseAddLambdaOptions = {
-  addToCategory: (newLambdaId: string) => void;
+  parentLambdaId: string;
+  relationship: LambdaRelationshipType;
 };
 
-export const useAddLambda = ({ addToCategory }: UseAddLambdaOptions) => {
+export const useAddLambda = ({ parentLambdaId, relationship }: UseAddLambdaOptions) => {
   const [inputValue, setInputValue] = useState('');
   const createLambda = useSetAtom(createAndInitializeLambdaAtom);
+  const formConnection = useSetAtom(formConnectionAtom);
+  const formDescription = useSetAtom(formDescriptionAtom);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
@@ -26,8 +31,15 @@ export const useAddLambda = ({ addToCategory }: UseAddLambdaOptions) => {
         descriptions: [],
       };
 
+      // Create the new lambda
       const newLambdaId = createLambda(newLambda);
-      addToCategory(newLambdaId);
+
+      // Add the new lambda to its parent's selected category (connections or descriptions)
+      if (relationship === 'connection') {
+        formConnection({ lambda1Id: parentLambdaId, lambda2Id: newLambdaId });
+      } else if (relationship === 'description') {
+        formDescription({ lambdaId: parentLambdaId, descriptionId: newLambdaId });
+      }
       setInputValue('');
     }
   };

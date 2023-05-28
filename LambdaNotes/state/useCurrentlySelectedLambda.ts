@@ -1,6 +1,6 @@
 import { Atom, atom, useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { useEffect } from 'react';
-import { LambdaUniverseAtomFamily } from './atoms';
+import { LambdaUniverseAtomFamily, fetchLambdaAtom } from './atoms';
 import { THE_ROOT_UNIVERSE } from './useLambdaRootUniverse';
 import { formConnectionAtom } from './write-atoms';
 import { AtomFamily } from 'jotai/vanilla/utils/atomFamily';
@@ -15,6 +15,7 @@ import {
   LambdaAccordionGraphAtomFamily,
   LambdaNotesGraphAtomFamily,
 } from '../state/Projections';
+import { getDefinitionAtom } from '../Dictionary/getDefinition';
 
 export const LAMBDA_VIEWS = {
   AccordionView,
@@ -71,18 +72,25 @@ export const useHandleLambdaClick = (id: LambdaId) => {
   const [formingConnection, setFormingConnection] = useAtom(CurrentlyFormingConnection);
   const formConnection = useSetAtom(formConnectionAtom);
 
-  return () => {
+  const selectedLambdaAtom = useAtomValue(fetchLambdaAtom(id));
+
+  const getDefinition = useSetAtom(getDefinitionAtom);
+
+  const handleClick = () => {
     if (formingConnection) {
-      console.log("Let's form a new connection!", {
-        lambda1Id: formingConnection,
-        lambda2Id: id,
-      });
+      // If a Lambda has declared it's forming a connection, then a click means that these lambdas are now connected
       formConnection({ lambda1Id: formingConnection, lambda2Id: id });
       setFormingConnection(null);
     } else {
+      // Otherwise, a click means that this Lambda is now selected
       setSelectedLambda(id);
+
+      // When selected, we wanna grab the definitions for the Lambda value
+      getDefinition(selectedLambdaAtom);
     }
   };
+
+  return handleClick;
 };
 
 export const useCurrentlySelectedAsRoot = (

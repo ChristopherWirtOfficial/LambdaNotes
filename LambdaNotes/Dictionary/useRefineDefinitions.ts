@@ -7,7 +7,11 @@ import { useCallback, useMemo } from 'react';
 
 type LambdaDefinition = Lambda | LambdaAtom | LambdaId;
 
-const model = new OpenAI({ openAIApiKey: import.meta.env.VITE_OPENAI_API_KEY, temperature: 0.9 });
+const model = new OpenAI({
+  openAIApiKey: import.meta.env.VITE_OPENAI_API_KEY,
+  temperature: 0.9,
+  modelName: 'gpt-3.5-turbo',
+});
 
 export const BestDefinitionForLambdaAtomFamily = atomFamily((lambdaId: string) => atom<string | null>(null));
 

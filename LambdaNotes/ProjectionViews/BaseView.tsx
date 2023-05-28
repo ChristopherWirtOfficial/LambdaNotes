@@ -7,21 +7,17 @@ import { Lambda } from '../state';
 
 interface BaseViewProps {
   lambda: Lambda;
-  addToConnections: (newLambdaId: string) => void;
-  addTodescriptions: (newLambdaId: string) => void;
 }
 
-export const BaseView: React.FC<BaseViewProps> = ({ lambda, addToConnections, addTodescriptions }) => {
+export const BaseView: React.FC<BaseViewProps> = ({ lambda }) => {
   const connectionContext = useAddLambda({
-    addToCategory: (newLambdaId: string) => {
-      addToConnections(newLambdaId);
-    },
+    parentLambdaId: lambda.id,
+    relationship: 'connection',
   });
 
   const descriptionContext = useAddLambda({
-    addToCategory: (newLambdaId: string) => {
-      addTodescriptions(newLambdaId);
-    },
+    parentLambdaId: lambda.id,
+    relationship: 'description',
   });
 
   return (

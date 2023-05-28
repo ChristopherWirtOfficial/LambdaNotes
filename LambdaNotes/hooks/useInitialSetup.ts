@@ -79,7 +79,7 @@ const fakeIdToGuidMap = new Map<string, string>();
 
 const initialUniverseMap = new Map<string, FakeLambda>(initialUniverse.map((fl) => [fl.id, fl]));
 
-const setupUniverseRecursively = (parent: string, fakeId: string, set: Setter) => {
+const setupUniverseRecursively = (fakeId: string, set: Setter) => {
   // If this fakeId is already in the map, then we've processed this node already.
   if (fakeIdToGuidMap.has(fakeId)) {
     return fakeIdToGuidMap.get(fakeId)!;
@@ -107,12 +107,12 @@ const setupUniverseRecursively = (parent: string, fakeId: string, set: Setter) =
 
   // Recursively process the connections and descriptions, converting their fakeIds into real GUIDs.
   fakeLambda.connections.forEach((connectionId) => {
-    const realId = setupUniverseRecursively(newLambdaId, connectionId, set);
+    const realId = setupUniverseRecursively(connectionId, set);
     newLambda.connections.push(realId!);
   });
 
   fakeLambda.descriptions.forEach((descriptionsId) => {
-    const realId = setupUniverseRecursively(newLambdaId, descriptionsId, set);
+    const realId = setupUniverseRecursively(descriptionsId, set);
     newLambda.descriptions.push(realId!);
   });
 
@@ -128,7 +128,7 @@ export const setupLambdaUniverseAtom = atom(
     fakeIdToGuidMap.set('0', THE_ROOT_UNIVERSE); // Map the fake root ID to the real root ID
 
     // Start the recursive setup process with the root node
-    const newUniverseRootId = setupUniverseRecursively(THE_ROOT_UNIVERSE, '1', set); // Assuming '1' is the id of root in your initialUniverse
+    const newUniverseRootId = setupUniverseRecursively('1', set); // Assuming '1' is the id of root in your initialUniverse
 
     // Make the newUniverseRootId a descriptions child of the root universe
     const rootUniverseAtom = LambdaUniverseAtomFamily(THE_ROOT_UNIVERSE);

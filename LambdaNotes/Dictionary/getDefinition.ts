@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import axios from 'axios';
 import { DictionaryAPIResponse } from './DictionaryAPITypes';
 import { atom } from 'jotai';

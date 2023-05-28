@@ -3,7 +3,7 @@ import { atom, useSetAtom } from 'jotai';
 import { atomFamily } from 'jotai/utils';
 import { editor as monacoEditor } from 'monaco-editor';
 import { useCallback } from 'react';
-import { Lambda } from '../state/atoms';
+import { Lambda } from '../state';
 
 // TODO: PICKUP - This set of atoms and hooks is NOT in use currently, but probably should be!
 /*           I'd ideally love to manage these with atoms:
