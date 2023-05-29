@@ -3,15 +3,13 @@ import { atomFamily } from 'jotai/utils';
 import { fetchLambdaAtom } from '../atoms';
 import { Lambda, LambdaId, LambdaAtom } from '../types';
 
-export type AtomFamily = typeof LambdaPerspectiveGraphAtomFamily;
+// The maximum depth allowed for recursion to avoid infinite loops or call stack overflow
+export const MAX_DEPTH = 10;
 
 export interface VirtualLambdaAtom extends LambdaAtom {
-  baseId: LambdaId; // Points to the underlying LambdaAtom
-  customTraversal: ProjectionFunction;
+  baseId: LambdaId; // Points to the underlying static LambdaAtom
+  customTraversal: ProjectionFunction; // Optional custom traversal function
 }
-
-// Limit to prevent deep recursive traversals
-export const MAX_DEPTH = 10;
 
 // Structure to simplify argument passing
 export type ContextObject = {
@@ -23,22 +21,27 @@ export type ContextObject = {
 };
 
 // Function that checks if a lambda id has been visited before, if not, it executes the provided function
+// This prevents cycles in the graph traversal by making sure every node is visited only once
 export type CheckVisitedAndExecFunc = <T>(func: () => T) => (lambdaId: LambdaId) => T | undefined;
 
 // Type for functions that create a Lambda object using the provided context
+// These functions are key for enabling virtual lambdas with their own custom traversal logic
 export type ProjectionFunction = (context: ContextObject) => Lambda;
 
 // Type for functions that build a graph of interconnected Lambda objects using the provided context
 export type BuildGraphFunction = (context: ContextObject) => Lambda;
 
-// Create a Lambda object from a LambdaAtom or VirtualLambdaAtom
+// This function is responsible for creating Lambda objects from LambdaAtoms
+// If a VirtualLambdaAtom is encountered, the customTraversal function is used if it exists
 export const createLambdaFromAtom = (lambdaAtom: LambdaAtom, depth: number, context?: ContextObject): Lambda => {
+  // If this atom is a virtual lambda, we use its customTraversal function
   if ((lambdaAtom as VirtualLambdaAtom).baseId) {
     const virtualLambdaAtom = lambdaAtom as VirtualLambdaAtom;
 
     // Change the projection function based on the virtual lambda's customTraversal, if it exists
     const newProjectionFunction = virtualLambdaAtom.customTraversal || context?.buildGraph;
 
+    // Call the new projection function
     return context
       ? newProjectionFunction({
           ...context,
@@ -49,7 +52,7 @@ export const createLambdaFromAtom = (lambdaAtom: LambdaAtom, depth: number, cont
       : createLambdaFromAtom(lambdaAtom, depth);
   }
 
-  // LambdaAtom case
+  // Non-virtual LambdaAtom case
   return {
     id: lambdaAtom.id,
     value: lambdaAtom.value,
@@ -60,19 +63,33 @@ export const createLambdaFromAtom = (lambdaAtom: LambdaAtom, depth: number, cont
 };
 
 // Perform a breadth-first search (BFS) on descriptions to establish hierarchy
+// The BFS approach guarantees that all descriptions of a lambda are processed before moving onto connections
+// This establishes the hierarchical nature of descriptions, and also means the traversal respects the asymmetric
+// nature of descriptions being viewed first
 export const processDescriptionsBFS = (context: ContextObject): Lambda | undefined => {
+  // Get the LambdaAtom for the current id
   const descLambdaAtom = context.get(fetchLambdaAtom(context.lambdaId));
+
+  // Create a Lambda object from the atom
   const descriptionLambda: Lambda = createLambdaFromAtom(descLambdaAtom, context.depth);
+
+  // Assign descriptions by recursively processing each one
   descriptionLambda.descriptions = descLambdaAtom.descriptions
     .filter((innerDescId) => context.checkVisitedAndExecFunc(() => true)(innerDescId))
     .map((innerDescId) => processDescriptionsBFS({ ...context, lambdaId: innerDescId, depth: context.depth + 1 }))
     .filter(Boolean) as Lambda[];
+
+  // Return the newly created Lambda object with its descriptions
   return descriptionLambda;
 };
 
 // Process connections for each Lambda using a depth-first search (DFS)
+// DFS is used to ensure every connection is fully explored before moving onto the next one
 export const processConnectionsDFS = (lambda: Lambda, context: ContextObject): Lambda | undefined => {
+  // Get the LambdaAtom for the current id
   const connLambdaAtom = context.get(fetchLambdaAtom(lambda.id));
+
+  // Assign connections by recursively processing each one
   lambda.connections = connLambdaAtom.connections
     .filter((connId) => context.checkVisitedAndExecFunc(() => true)(connId))
     .map((connId) => context.buildGraph({ ...context, lambdaId: connId, depth: context.depth + 1 }))
@@ -81,19 +98,23 @@ export const processConnectionsDFS = (lambda: Lambda, context: ContextObject): L
   // Process descriptions within each connection
   lambda.descriptions.forEach((descriptionLambda) => processConnectionsDFS(descriptionLambda, context));
 
+  // Return the Lambda object with its connections processed
   return lambda;
 };
 
 // Build the graph of interconnected Lambda objects
 const buildGraph: BuildGraphFunction = (context) => {
+  // Get the LambdaAtom for the current id
   const lambdaAtom = context.get(fetchLambdaAtom(context.lambdaId));
 
+  // If this atom is a virtual lambda, we use its customTraversal function
   if ((lambdaAtom as VirtualLambdaAtom).baseId) {
     const virtualLambdaAtom = lambdaAtom as VirtualLambdaAtom;
 
     // Change the projection function based on the virtual lambda's customTraversal, if it exists
     const newProjectionFunction = virtualLambdaAtom.customTraversal || context.buildGraph;
 
+    // Call the new projection function
     return buildGraph({
       ...context,
       lambdaId: virtualLambdaAtom.baseId,
@@ -102,12 +123,17 @@ const buildGraph: BuildGraphFunction = (context) => {
     });
   }
 
+  // Call the default projection function for non-virtual lambdas
   return defaultProjectionFunction(context);
 };
 
 // Default function to create a Lambda object
+// This function processes descriptions with BFS and connections with DFS to ensure full traversal and establish hierarchy
 export const defaultProjectionFunction: ProjectionFunction = (context) => {
+  // Get the LambdaAtom for the current id
   const lambdaAtom = context.get(fetchLambdaAtom(context.lambdaId));
+
+  // Create a Lambda object from the atom
   const lambda = createLambdaFromAtom(lambdaAtom, context.depth);
 
   // Prevent excessive depth
@@ -115,22 +141,27 @@ export const defaultProjectionFunction: ProjectionFunction = (context) => {
     throw new Error('Maximum depth exceeded');
   }
 
+  // Process descriptions using BFS
   lambda.descriptions = lambdaAtom.descriptions
     .filter((descId) => context.checkVisitedAndExecFunc(() => true)(descId))
     .map((descId) => processDescriptionsBFS({ ...context, lambdaId: descId }))
     .filter(Boolean) as Lambda[];
 
-  // Process connections within each description
+  // Process connections within each description using DFS
   processConnectionsDFS(lambda, context);
 
+  // Return the Lambda object with its descriptions and connections processed
   return lambda;
 };
 
 // Jotai atom family representing a hypergraph of interconnected concepts (a Lambda Lattice) from the perspective of a given Lambda
+// This atom family is the key to constructing projections of the lambda lattice
 export const LambdaPerspectiveGraphAtomFamily = atomFamily((rootLambdaId: LambdaId) => {
   return atom((get) => {
     // Track visited lambdas to prevent cycles
     const visited = new Set<LambdaId>([rootLambdaId]);
+
+    // Function that checks if a lambda has been visited before, if not, it executes the provided function
     const checkVisitedAndExecFunc: CheckVisitedAndExecFunc =
       <T>(func: () => T) =>
       (lambdaId: LambdaId): T | undefined => {
@@ -149,6 +180,7 @@ export const LambdaPerspectiveGraphAtomFamily = atomFamily((rootLambdaId: Lambda
       throw new Error(`Error generating a Root Lambda projection for ${rootLambdaId}`);
     }
 
+    // The root of the graph representing the perspective of the given lambda
     return newRootLambda;
   });
 });

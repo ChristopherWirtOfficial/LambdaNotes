@@ -22,7 +22,11 @@ export const doesLambdaIdExist = (id: LambdaId): boolean => {
   return exists || !LambdaUniverseList.add(id);
 };
 
-export * from './read-atoms';
+// Fetch a lambda atom by ID
+export const fetchLambdaAtom = atomFamily((lambdaId: LambdaId) => {
+  return atom((get) => get(LambdaUniverseAtomFamily(lambdaId)));
+});
+
 export * from './LambdaAtomSelectors';
 export * from './write-atoms';
 

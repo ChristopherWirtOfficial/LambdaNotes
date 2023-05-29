@@ -111,7 +111,7 @@ const TypeScriptEditor = () => {
         height="90vh"
         width="50vw"
         defaultValue={descriptionsLambasAsText}
-        // defaultLanguage="typescript"
+        defaultLanguage="markdown"
         theme="vs-dark"
         onMount={handleEditorDidMountWithStore}
       />

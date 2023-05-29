@@ -40,9 +40,3 @@ export interface LambdaAtom {
   descriptions: LambdaId[];
   connections: LambdaId[];
 }
-
-/**
- * A VirtualLambdaAtom is a special kind of LambdaAtom that can dictate custom projection behavior.
- * It provides a 'customTraversal' function that can replace the currently scoped projection function,
- * enabling the system to interpret the underlying LambdaAtom (referenced by 'baseId') in a different way.
- */

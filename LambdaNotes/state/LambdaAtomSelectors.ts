@@ -1,5 +1,8 @@
 import { LambdaAtom } from './types';
 
+// NOTE: I think this is currently only used in some very specific example/demo cases that are probably a bit obsolete overall
+//       I'm not sure if it's worth keeping around, but I'm leaving it for now just in case
+
 // Clears a vector
 export const clearVector =
   (key: 'descriptions' | 'connections') =>
