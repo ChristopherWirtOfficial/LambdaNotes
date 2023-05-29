@@ -1,8 +1,8 @@
-import { OnMount } from '@monaco-editor/react';
+import { OnMount, useMonaco } from '@monaco-editor/react';
 import { atom, useSetAtom } from 'jotai';
 import { atomFamily } from 'jotai/utils';
 import { editor as monacoEditor } from 'monaco-editor';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Lambda } from '../state';
 
 // TODO: PICKUP - This set of atoms and hooks is NOT in use currently, but probably should be!
@@ -40,6 +40,24 @@ export const editorModelAtom = atom<monacoEditor.IModel | null>((get) => {
   const editor = get(editorAtom);
   return editor?.getModel();
 });
+
+type MonacoInstance = ReturnType<typeof useMonaco>;
+
+// Atoms to store the Monaco instance
+export const monacoInstanceAtom = atom<MonacoInstance | null>(null);
+
+export const useMonacoInstance = () => {
+  const setMonaco = useSetAtom(monacoInstanceAtom);
+  const monaco = useMonaco();
+
+  useEffect(() => {
+    if (monaco) {
+      setMonaco(monaco);
+    }
+  }, [monaco, setMonaco]);
+
+  return monaco;
+};
 
 // Atom family to calculate decorations based on notesRoot
 export const decorationsAtomFamily = atomFamily((notesRoot: Lambda) =>

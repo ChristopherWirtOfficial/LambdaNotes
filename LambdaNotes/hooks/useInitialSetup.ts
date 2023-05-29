@@ -147,7 +147,7 @@ export const useInitialSetup = () => {
   const [_, setupLambdaUniverse] = useAtom(setupLambdaUniverseAtom);
 
   useEffect(() => {
-    setupLambdaUniverse();
+    // setupLambdaUniverse();
   }, [setupLambdaUniverse]);
 };
 

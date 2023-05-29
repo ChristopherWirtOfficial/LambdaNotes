@@ -13,6 +13,15 @@ export const LambdaUniverseAtomFamily = atomFamily((id: LambdaId) =>
   })
 );
 
+export const LambdaUniverseList = new Set<LambdaId>();
+
+export const doesLambdaIdExist = (id: LambdaId): boolean => {
+  const exists = LambdaUniverseList.has(id);
+
+  // If the LambdaId already exists, great. If not, add it to the list, but return false
+  return exists || !LambdaUniverseList.add(id);
+};
+
 export * from './read-atoms';
 export * from './LambdaAtomSelectors';
 export * from './write-atoms';

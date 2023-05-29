@@ -5,7 +5,7 @@
 
 import { atom } from 'jotai';
 import { atomFamily } from 'jotai/utils';
-import { fetchLambdaAtom, LambdaUniverseAtomFamily } from './atoms';
+import { doesLambdaIdExist, fetchLambdaAtom, LambdaUniverseAtomFamily } from './atoms';
 import uuidv4 from '../helpers/uuid';
 import { LambdaAtom, LambdaId } from './types';
 
@@ -71,7 +71,13 @@ export const formDescriptionAtom = atom(
 // New lambda creation and initialization atom
 export const createAndInitializeLambdaAtom = atom(undefined, (get, set, update: LambdaAtomWithOptionalId) => {
   const newLambdaId = update.id ?? uuidv4();
-  set(updateLambdaAtom(newLambdaId), { ...update, id: newLambdaId });
+
+  const alreadyInLattice = doesLambdaIdExist(newLambdaId);
+
+  if (!alreadyInLattice) {
+    set(updateLambdaAtom(newLambdaId), { ...update, id: newLambdaId });
+  }
+
   return newLambdaId;
 });
 

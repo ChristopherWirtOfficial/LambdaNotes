@@ -86,7 +86,7 @@ export const useHandleLambdaClick = (id: LambdaId) => {
       setSelectedLambda(id);
 
       // When selected, we wanna grab the definitions for the Lambda value
-      getDefinition(selectedLambdaAtom);
+      // getDefinition(selectedLambdaAtom);
     }
   };
 

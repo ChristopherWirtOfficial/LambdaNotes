@@ -1,5 +1,3 @@
-import { LambdaPerspectiveGraphAtomFamily } from '..';
-
 export type LambdaId = string;
 
 /**

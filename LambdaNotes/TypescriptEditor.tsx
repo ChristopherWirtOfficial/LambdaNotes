@@ -12,7 +12,7 @@ import { useEditorInstance } from './hooks/useEditor';
 
 const globalStyles = css`
   .myMarker {
-    background: rgba(111, 99, 200, 0.3);
+    # background: rgba(111, 99, 200, 0.3);
   }
 `;
 
@@ -105,13 +105,13 @@ const TypeScriptEditor = () => {
   }, [monaco, updateLambdaValue, editorMounted, decorationIds]);
 
   return (
-    <VStack width="100%" height="100%">
+    <VStack width="100%" height="100%" p={12}>
       <Global styles={globalStyles} />
       <Editor
         height="90vh"
         width="50vw"
         defaultValue={descriptionsLambasAsText}
-        defaultLanguage="typescript"
+        // defaultLanguage="typescript"
         theme="vs-dark"
         onMount={handleEditorDidMountWithStore}
       />
