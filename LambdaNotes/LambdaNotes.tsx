@@ -9,6 +9,7 @@ import { LambdaNotesGraphAtomFamily } from './state/Projections/LambdaNotesGraph
 import CurrentlySelectedDefinitions from './Dictionary/CurrentlySelectedDefinitions';
 import { useSync } from './hooks/useSync';
 import TypeScriptEditor from './TypescriptEditor';
+import ActionQueue from './LambdaActionQueue/ActionQueue';
 
 const LambdaNotes: React.FC = () => {
   useGlobalLambdaClickHandling();
@@ -20,6 +21,7 @@ const LambdaNotes: React.FC = () => {
 
   return (
     <VStack bg="blackAlpha.800" color="whiteAlpha.800">
+      <ActionQueue />
       <Flex>
         <TypeScriptEditor key={notesRoot.id} />
         <CurrentLambdaView />

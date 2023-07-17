@@ -30,6 +30,7 @@ export const useSaveLoadLattice = () => {
 
   const saveToLocalStorage = () => {
     const serializableLattice = getSerializableLattice();
+    console.log('serializableLattice', serializableLattice);
     localStorage.setItem('lambdaLattice', JSON.stringify(serializableLattice));
   };
 

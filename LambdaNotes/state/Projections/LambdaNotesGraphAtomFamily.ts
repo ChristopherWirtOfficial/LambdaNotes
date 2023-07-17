@@ -8,8 +8,6 @@ import { Lambda, LambdaAtom, LambdaId } from '../types';
 export const FlattenGraphToDepthAtomFamily = (depth: number) => {
   const flattenToDepthAtomFamily = atomFamily((rootLambdaAtom: LambdaAtom) =>
     atom<Lambda>((get) => {
-      const visited = new Set<LambdaId>();
-
       const flattenGraphArray = (currentDepth: number) => (L: Lambda) => {
         const flat = flattenGraph(L, currentDepth + 1);
 

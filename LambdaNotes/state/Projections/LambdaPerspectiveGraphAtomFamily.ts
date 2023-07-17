@@ -9,6 +9,8 @@ export const MAX_DEPTH = 10;
 export interface VirtualLambdaAtom extends LambdaAtom {
   baseId: LambdaId; // Points to the underlying static LambdaAtom
   customTraversal: ProjectionFunction; // Optional custom traversal function
+  DEBUG_NAME?: string; // This is ONLY for debugging purposes, and should NEVER be used semantically or to pass information across layers
+  DEBUG_VIRTUAL_TYPE?: string; // Same as above.
 }
 
 // Structure to simplify argument passing
@@ -17,7 +19,7 @@ export type ContextObject = {
   lambdaId: LambdaId;
   depth: number;
   checkVisitedAndExecFunc: CheckVisitedAndExecFunc;
-  buildGraph: BuildGraphFunction;
+  buildGraph: ProjectionFunction;
 };
 
 // Function that checks if a lambda id has been visited before, if not, it executes the provided function
@@ -28,12 +30,13 @@ export type CheckVisitedAndExecFunc = <T>(func: () => T) => (lambdaId: LambdaId)
 // These functions are key for enabling virtual lambdas with their own custom traversal logic
 export type ProjectionFunction = (context: ContextObject) => Lambda;
 
-// Type for functions that build a graph of interconnected Lambda objects using the provided context
-export type BuildGraphFunction = (context: ContextObject) => Lambda;
-
 // This function is responsible for creating Lambda objects from LambdaAtoms
 // If a VirtualLambdaAtom is encountered, the customTraversal function is used if it exists
-export const createLambdaFromAtom = (lambdaAtom: LambdaAtom, depth: number, context?: ContextObject): Lambda => {
+export const createLambdaFromAtom = <T extends LambdaAtom | VirtualLambdaAtom>(
+  lambdaAtom: T,
+  depth: number,
+  context?: ContextObject
+): Lambda => {
   // If this atom is a virtual lambda, we use its customTraversal function
   if ((lambdaAtom as VirtualLambdaAtom).baseId) {
     const virtualLambdaAtom = lambdaAtom as VirtualLambdaAtom;
@@ -49,7 +52,8 @@ export const createLambdaFromAtom = (lambdaAtom: LambdaAtom, depth: number, cont
           depth: context.depth + 1,
           buildGraph: newProjectionFunction,
         })
-      : createLambdaFromAtom(lambdaAtom, depth);
+      : // NOTE: I don't think this makes any sense, since it would just keep calling this function with this `lambdaAtom` over and over again
+        createLambdaFromAtom(lambdaAtom, depth);
   }
 
   // Non-virtual LambdaAtom case
@@ -103,7 +107,7 @@ export const processConnectionsDFS = (lambda: Lambda, context: ContextObject): L
 };
 
 // Build the graph of interconnected Lambda objects
-const buildGraph: BuildGraphFunction = (context) => {
+export const buildGraph: ProjectionFunction = (context) => {
   // Get the LambdaAtom for the current id
   const lambdaAtom = context.get(fetchLambdaAtom(context.lambdaId));
 
@@ -154,6 +158,20 @@ export const defaultProjectionFunction: ProjectionFunction = (context) => {
   return lambda;
 };
 
+// Higher-order function to generate a function that checks if a value is in a set
+// and executes a function if it is not
+export const generateCheckVisitedAndExecFunc = (visited: Set<LambdaId>): CheckVisitedAndExecFunc => {
+  return <T>(func: () => T) =>
+    (lambdaId: LambdaId): T | undefined => {
+      if (visited.has(lambdaId)) {
+        return undefined;
+      } else {
+        visited.add(lambdaId);
+        return func();
+      }
+    };
+};
+
 // Jotai atom family representing a hypergraph of interconnected concepts (a Lambda Lattice) from the perspective of a given Lambda
 // This atom family is the key to constructing projections of the lambda lattice
 export const LambdaPerspectiveGraphAtomFamily = atomFamily((rootLambdaId: LambdaId) => {
@@ -162,16 +180,7 @@ export const LambdaPerspectiveGraphAtomFamily = atomFamily((rootLambdaId: Lambda
     const visited = new Set<LambdaId>([rootLambdaId]);
 
     // Function that checks if a lambda has been visited before, if not, it executes the provided function
-    const checkVisitedAndExecFunc: CheckVisitedAndExecFunc =
-      <T>(func: () => T) =>
-      (lambdaId: LambdaId): T | undefined => {
-        if (visited.has(lambdaId)) {
-          return undefined;
-        } else {
-          visited.add(lambdaId);
-          return func();
-        }
-      };
+    const checkVisitedAndExecFunc = generateCheckVisitedAndExecFunc(visited);
 
     // Begin building the graph from the root
     const newRootLambda = buildGraph({ get, lambdaId: rootLambdaId, depth: 0, checkVisitedAndExecFunc, buildGraph });

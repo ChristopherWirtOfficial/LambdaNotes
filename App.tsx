@@ -1,11 +1,7 @@
 // Import the components
-import { Box, ChakraProvider, VStack } from '@chakra-ui/react';
-import Clicker from './Clicker';
-import Upgrade from './Upgrade';
+import { ChakraProvider } from '@chakra-ui/react';
 import theme from './theme';
-import { CrtScreen } from './components/CRTScreen';
-import LambdaNotes from './LambdaNotes/LambdaNotes';
-import React from 'react';
+import QualityRefiner from './LambdaNotes/QualityRefiner/QualityRefiner';
 
 // Define the App component
 function App() {
@@ -18,7 +14,9 @@ function App() {
           <Upgrade />
         </VStack>
       </CrtScreen> */}
-      <LambdaNotes />
+      {/* <LambdaNotes /> */}
+      {/* <ChessMoves /> */}
+      <QualityRefiner />
     </ChakraProvider>
   );
 }

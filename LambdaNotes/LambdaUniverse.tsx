@@ -6,9 +6,13 @@ import {
   CurrentlySelectedLambda,
   useHandleLambdaClick,
 } from './state/useCurrentlySelectedLambda';
-import { ListItem, Box, List, Button, VStack } from '@chakra-ui/react';
+import { ListItem, Box, List, VStack, Text } from '@chakra-ui/react';
 import { LinkIcon } from '@chakra-ui/icons';
-import { getDefinition, getDefinitionAtom } from './Dictionary/getDefinition';
+import { getDefinitionAtom } from './Dictionary/getDefinition';
+import { splitSentenceLambdaAtom } from './state/actions/split-sentence-lambda';
+import { checkBridgeAtom } from './state/actions/check-bridge';
+import { deleteLambdaAtom } from './state';
+import { LambdaAction, addActionAtom } from './LambdaActionQueue/action-queue';
 
 type LambdaListProps = {
   lambdas: Lambda[];
@@ -23,6 +27,8 @@ const LambdaList: FC<LambdaListProps> = ({ lambdas }) => {
     </VStack>
   );
 };
+
+type PotentialLambdaAction = Omit<LambdaAction, 'id'>;
 
 const LambdaUniverse: FC<{ lambda: Lambda }> = ({ lambda }) => {
   const { value, id, connections, descriptions } = lambda;
@@ -54,14 +60,51 @@ const LambdaUniverse: FC<{ lambda: Lambda }> = ({ lambda }) => {
     console.log('definition', definition);
   };
 
+  const splitSentence = useSetAtom(splitSentenceLambdaAtom);
+  const checkBridge = useSetAtom(checkBridgeAtom);
+  const deleteLambda = useSetAtom(deleteLambdaAtom);
+
+  const actions: PotentialLambdaAction[] = [
+    {
+      name: 'Get definition',
+      action: getDef,
+      automatic: true,
+    },
+    {
+      name: 'Split sentence',
+      action: () => splitSentence(lambda.id),
+      automatic: true,
+    },
+    {
+      name: 'Check Bridge',
+      action: () => checkBridge(lambda.id),
+      automatic: true,
+    },
+    {
+      name: 'Delete',
+      action: () => deleteLambda(lambda.id),
+    },
+  ];
+
+  const addActionToQueue = useSetAtom(addActionAtom);
+
+  const addAction = (action: PotentialLambdaAction) => () => {
+    addActionToQueue({
+      ...action,
+      primaryLambdas: [lambda.id],
+    });
+  };
+
   return (
     <Box w="100%" h="100%" borderWidth={isSelected ? '3px' : '1px'} borderColor={isSelected ? 'white' : 'darkgray'}>
-      <Box p="1" onClick={handleLambdaClick}>
+      <Box p="1" onClick={handleLambdaClick} cursor="pointer">
         {value} <LinkIcon onClick={handleIconClick} color={formingConnection === id ? 'blue.500' : 'gray.500'} />
       </Box>
-      <Box p={1} onClick={getDef}>
-        Get definition
-      </Box>
+      {actions.map((potentialAction) => (
+        <Box key={potentialAction.name} p={1} onClick={addAction(potentialAction)} color="whitesmoke" fontWeight="bold">
+          <Text cursor="pointer">{potentialAction.name}</Text>
+        </Box>
+      ))}
       <VStack align="start" spacing={4}>
         <List>
           <ListItem>

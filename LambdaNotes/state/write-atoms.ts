@@ -5,11 +5,18 @@
 
 import { atom } from 'jotai';
 import { atomFamily } from 'jotai/utils';
-import { doesLambdaIdExist, fetchLambdaAtom, LambdaUniverseAtomFamily } from './atoms';
+import {
+  DefaultLambda,
+  DeletedLambdaIds,
+  doesLambdaIdExist,
+  fetchLambdaAtom,
+  LambdaUniverseAtomFamily,
+  VirtualLambdaAtom,
+} from './atoms';
 import uuidv4 from '../helpers/uuid';
 import { LambdaAtom, LambdaId } from './types';
 
-export type LambdaAtomWithOptionalId = Omit<LambdaAtom, 'id'> & Partial<Pick<LambdaAtom, 'id'>>;
+export type LambdaAtomWithOptionalId = Omit<LambdaAtom, 'id'> & Partial<Pick<LambdaAtom | VirtualLambdaAtom, 'id'>>;
 
 // Update a lambda atom by ID
 export const updateLambdaAtom = atomFamily((lambdaId: LambdaId) => {
@@ -99,3 +106,35 @@ export const breakConnectionAtom = atom(
     set(updateLambdaAtom(lambda2Id), updatedLambda2);
   }
 );
+
+// Atom to delete a lambda from the lattice
+export const deleteLambdaAtom = atom(undefined, (get, set, lambdaId: LambdaId) => {
+  // Break all connections to this lambda
+  // Since all lambdas with this lambda in its descriptions or connections MUST be in this lambdas descriptions or connections, we can just iterate through those
+  // BUT, we also need to make sure that this lambda isn't the only path from any of its connections to the rest of the lattice...Hmm
+  const lambda = get(fetchLambdaAtom(lambdaId));
+
+  // Remove itself from the descriptions/connections of any of ITS descriptions/connections
+  lambda.descriptions.forEach((descriptionId) => {
+    set(breakConnectionAtom, { lambda1Id: lambdaId, lambda2Id: descriptionId });
+
+    // If it was in OUR descriptions, then we know we aren't in ITS descriptions
+  });
+
+  lambda.connections.forEach((connectionId) => {
+    set(breakConnectionAtom, { lambda1Id: lambdaId, lambda2Id: connectionId });
+
+    // We could be in both its connections and descriptions
+    const connection = get(fetchLambdaAtom(connectionId));
+    set(updateLambdaAtom(connectionId), {
+      ...connection,
+      descriptions: connection.descriptions.filter((descriptionId) => descriptionId !== lambdaId),
+    });
+  });
+
+  // Delete the lambda
+  set(LambdaUniverseAtomFamily(lambdaId), DefaultLambda(lambdaId));
+
+  // DEBUG: We add the deleted lambda to the DeletedLambdaIds set to throw errors if anything ever tries to fetch it again, which should never happen
+  DeletedLambdaIds.add(lambdaId);
+});
