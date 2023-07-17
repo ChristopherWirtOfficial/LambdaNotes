@@ -9,7 +9,9 @@
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.0.19",
@@ -25,6 +27,7 @@
     "dotenv": "^16.0.3",
     "emotion-theming": "^11.0.0",
     "framer-motion": "^10.12.12",
+    "gh-pages": "^5.0.0",
     "jotai": "^2.0.4",
     "langchain": "^0.0.82",
     "monaco-editor": "^0.38.0",
