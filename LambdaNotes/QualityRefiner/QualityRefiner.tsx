@@ -16,7 +16,7 @@ import {
   StackDivider,
 } from '@chakra-ui/react';
 import { atom } from 'jotai';
-import { Answers, useGuesser } from './useGuesser';
+import { Answers, OpenAIKeyAtom, useGuesser } from './useGuesser';
 import { CloseIcon, EditIcon } from '@chakra-ui/icons';
 
 export type Quality = string;
@@ -33,6 +33,8 @@ const guessAtom = atom<Answers | null>(null);
 const loadingAtom = atom<boolean>(false);
 
 const QualityRefiner: FC = () => {
+  const [openAiKey, setOpenAiKey] = useAtom(OpenAIKeyAtom);
+
   // Set up state using Jotai atoms
   const [qualities, setQualities] = useAtom(qualitiesAtom);
   const [guess, setGuess] = useAtom(guessAtom);
@@ -102,10 +104,33 @@ const QualityRefiner: FC = () => {
     }
   }, [qualities, getGuess]);
 
+  // Set up a ref for the OpenAI key input field
+  const openAiKeyRef = useRef<HTMLInputElement | null>(null);
+
+  // Function to handle setting OpenAI key
+  const handleSetOpenAIKey = () => {
+    if (openAiKeyRef.current?.value) {
+      setOpenAiKey(openAiKeyRef.current.value);
+    }
+  };
+
+  // Function to handle setting OpenAI key on 'Enter' key press
+  const handleOpenAIKeyPress = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      handleSetOpenAIKey();
+    }
+  };
+
   return (
     <VStack bg="blackAlpha.800" color="whiteAlpha.800">
       <Flex w="100vw" minH="100vh" p={10} justifyContent="space-between" gap={8}>
         <VStack flex="1" bg="gray.700" p={6} borderRadius="lg" align="start" gap={6}>
+          <Input
+            ref={openAiKeyRef}
+            placeholder="Enter your OpenAI Key"
+            onKeyPress={handleOpenAIKeyPress}
+            onBlur={handleSetOpenAIKey}
+          />
           <Heading as="h2" size="lg" color="white">
             Add your qualities
           </Heading>

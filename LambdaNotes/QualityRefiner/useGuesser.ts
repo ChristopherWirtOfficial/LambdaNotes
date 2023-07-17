@@ -3,12 +3,24 @@ import { Quality } from './QualityRefiner';
 import { useCallback } from 'react';
 import { StructuredOutputParser } from 'langchain/output_parsers';
 import { PromptTemplate } from 'langchain';
+import { atomFamily, atomWithStorage, createJSONStorage } from 'jotai/utils';
+import { atom, useAtomValue } from 'jotai';
 
-const model = new OpenAI({
-  openAIApiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  temperature: 0.9,
-  modelName: 'gpt-3.5-turbo',
-});
+const storage = createJSONStorage(() => localStorage);
+
+const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY ?? '';
+
+export const OpenAIKeyAtom = atomWithStorage<string>('openAiKey', OPENAI_API_KEY, storage);
+
+export const ModelsByKeyAtomFamily = atomFamily((key: string) =>
+  atom(
+    new OpenAI({
+      openAIApiKey: key,
+      temperature: 0.9,
+      modelName: 'gpt-3.5-turbo',
+    })
+  )
+);
 
 const template = `
   Given the following "qualities" of some concept or term you're being asked to guess, what do you think the most likely answer is?
@@ -39,6 +51,9 @@ export type Answers = {
 };
 
 export const useGuesser = () => {
+  const openAiKey = useAtomValue(OpenAIKeyAtom);
+  const model = useAtomValue(ModelsByKeyAtomFamily(openAiKey));
+
   const askForGuessImpl = async (qualities: Quality[]) => {
     // With a `StructuredOutputParser` we can define a schema for the output.
     const parser = StructuredOutputParser.fromNamesAndDescriptions(outputNamesAndDescriptions);
@@ -66,7 +81,7 @@ export const useGuesser = () => {
     return answers;
   };
 
-  const askForGuess = useCallback(askForGuessImpl, []);
+  const askForGuess = useCallback(askForGuessImpl, [model]);
 
   return {
     askForGuess,
